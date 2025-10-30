@@ -21,7 +21,8 @@ Return format: ["reply1", "reply2", "reply3", "reply4"]`;
       },
       signal: controller.signal,
       body: JSON.stringify({
-        model: "meta-llama/llama-3.1-8b-instruct:free",
+        // LLM Model
+        model: "meta-llama/llama-3.1-8b-instruct",
         messages: [
           {
             role: "user",

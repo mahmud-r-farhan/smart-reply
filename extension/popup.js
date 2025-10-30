@@ -1,10 +1,60 @@
-const root = document.getElementById("root")
+const defaultBackendUrl = "http://localhost:5006/api/suggest-reply"
 
-// Initialize popup
+// View elements
+const mainView = document.getElementById("mainView")
+const settingsView = document.getElementById("settingsView")
+const formBody = document.getElementById("formBody")
+
+// Main view elements
+const messageInput = document.getElementById("messageInput")
+const styleSelect = document.getElementById("styleSelect")
+const generateBtn = document.getElementById("generateBtn")
+const settingsBtn = document.getElementById("settingsBtn")
+const container = document.getElementById("suggestionsContainer")
+
+// Settings view elements
+const backBtn = document.getElementById("backBtn")
+const backendUrlInput = document.getElementById("backendUrlInput")
+const saveBtn = document.getElementById("saveBtn")
+
+// Toast element
+const toast = document.getElementById("toast")
+
+// --- SVGs for UI (now with no classes) ---
+const spinnerIcon = `
+  <svg class="spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+  </svg>
+`
+const copyIcon = `
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876V4.5c0-.621-.504-1.125-1.125-1.125H7.875c-.621 0-1.125.504-1.125 1.125v.375m11.25 12.875-2.25-2.25" />
+  </svg>
+`
+const insertIcon = `
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+  </svg>
+`
+
+// --- Initialization ---
 async function initPopup() {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
-  const selectedText = tab ? await getSelectedText(tab.id) : ""
-  render(selectedText)
+  generateBtn.addEventListener("click", generateSuggestions)
+  settingsBtn.addEventListener("click", openSettings)
+  backBtn.addEventListener("click", closeSettings)
+  saveBtn.addEventListener("click", saveSettings)
+  loadSettings()
+
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+    if (tab) {
+      const selectedText = await getSelectedText(tab.id)
+      messageInput.value = selectedText || ""
+    }
+  } catch (error) {
+    console.warn("Could not query tabs or get selected text:", error.message)
+  }
 }
 
 async function getSelectedText(tabId) {
@@ -12,110 +62,62 @@ async function getSelectedText(tabId) {
     const result = await chrome.tabs.sendMessage(tabId, { action: "getSelectedText" })
     return result?.text || ""
   } catch (error) {
-    console.log("Could not get selected text", error)
+    console.log("Could not get selected text:", error.message)
     return ""
   }
 }
 
-function render(selectedText) {
-  root.innerHTML = `
-    <div class="space-y-4">
-      <div class="flex items-center justify-between">
-        <h1 class="text-lg font-bold text-slate-900">Smart Reply</h1>
-        <button id="settingsBtn" class="text-slate-500 hover:text-slate-700" aria-label="Settings">
-          ⚙️
-        </button>
-      </div>
-
-      <div>
-        <label for="messageInput" class="block text-sm font-medium text-slate-700 mb-2">Message</label>
-        <textarea
-          id="messageInput"
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          rows="3"
-          placeholder="Paste or type the message you want to reply to..."
-          aria-label="Message to reply to"
-        ></textarea>
-      </div>
-
-      <div>
-        <label for="styleSelect" class="block text-sm font-medium text-slate-700 mb-2">Tone</label>
-        <select
-          id="styleSelect"
-          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          aria-label="Tone"
-        >
-          <option value="professional">Professional</option>
-          <option value="friendly">Friendly</option>
-          <option value="formal">Formal</option>
-          <option value="short">Short & Concise</option>
-          <option value="descriptive">Detailed & Descriptive</option>
-        </select>
-      </div>
-
-      <button
-        id="generateBtn"
-        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-        aria-live="polite"
-      >
-        Generate Suggestions
-      </button>
-
-      <div id="loading" class="hidden text-center py-4" role="status" aria-hidden="true">
-        <div class="inline-block animate-spin">⏳</div>
-        <p class="text-sm text-slate-600 mt-2">Generating suggestions...</p>
-      </div>
-
-      <div id="suggestionsContainer" class="space-y-2"></div>
-    </div>
-
-    <div id="toast" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 hidden px-4 py-2 rounded shadow text-sm"></div>
-  `
-
-  // populate textarea safely
-  const messageInput = document.getElementById("messageInput")
-  messageInput.value = selectedText || ""
-
-  // Event listeners
-  document.getElementById("generateBtn").addEventListener("click", generateSuggestions)
-  document.getElementById("settingsBtn").addEventListener("click", openSettings)
+// --- View Switching ---
+function openSettings() {
+  mainView.classList.add("hidden-view")
+  settingsView.classList.remove("hidden-view")
 }
 
+function closeSettings() {
+  settingsView.classList.add("hidden-view")
+  mainView.classList.remove("hidden-view")
+}
+
+// --- Settings Logic ---
+async function loadSettings() {
+  const cfg = await chrome.storage.sync.get({ backendUrl: defaultBackendUrl })
+  backendUrlInput.value = cfg.backendUrl
+}
+
+async function saveSettings() {
+  const newUrl = backendUrlInput.value.trim() || defaultBackendUrl
+  await chrome.storage.sync.set({ backendUrl: newUrl })
+  backendUrlInput.value = newUrl
+  showToast("Settings saved!", "success")
+  closeSettings()
+}
+
+// --- Toast Notification (Updated) ---
 function showToast(message, type = "info", timeout = 2500) {
-  const toast = document.getElementById("toast")
-  toast.className = "fixed bottom-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded shadow text-sm"
-  if (type === "error") {
-    toast.classList.add("bg-red-600", "text-white")
-  } else if (type === "success") {
-    toast.classList.add("bg-green-600", "text-white")
-  } else {
-    toast.classList.add("bg-slate-800", "text-white")
-  }
   toast.textContent = message
-  toast.classList.remove("hidden")
+  // Use CSS classes for type
+  toast.className = type // "success", "error", or "info"
+  
   clearTimeout(toast._timeout)
   toast._timeout = setTimeout(() => {
-    toast.classList.add("hidden")
+    toast.className = "hidden"
   }, timeout)
 }
 
+// --- Core App Logic ---
 async function generateSuggestions() {
-  const message = document.getElementById("messageInput").value.trim()
-  const style = document.getElementById("styleSelect").value
-  const generateBtn = document.getElementById("generateBtn")
-  const loading = document.getElementById("loading")
-  const container = document.getElementById("suggestionsContainer")
+  const message = messageInput.value.trim()
+  const style = styleSelect.value
 
   if (!message) {
-    showToast("Please enter a message to generate suggestions.", "error")
+    showToast("Please enter a message.", "error")
     return
   }
 
-  // UI state
+  // --- Loading UI State ---
   generateBtn.disabled = true
-  generateBtn.classList.add("opacity-60", "cursor-not-allowed")
-  loading.classList.remove("hidden")
-  loading.setAttribute("aria-hidden", "false")
+  formBody.disabled = true
+  generateBtn.innerHTML = `${spinnerIcon} Generating...`
   container.innerHTML = ""
 
   try {
@@ -125,74 +127,71 @@ async function generateSuggestions() {
       style,
     })
 
-    loading.classList.add("hidden")
-    loading.setAttribute("aria-hidden", "true")
-    generateBtn.disabled = false
-    generateBtn.classList.remove("opacity-60", "cursor-not-allowed")
-
     if (response?.suggestions && response.suggestions.length > 0) {
       displaySuggestions(response.suggestions)
       showToast("Suggestions generated", "success")
     } else if (response?.error) {
-      container.innerHTML = `<p class="text-sm text-red-600">${escapeHtml(response.error)}</p>`
+      container.innerHTML = `<div class="error-box"><b>Error:</b> ${escapeHtml(response.error)}</div>`
       showToast("Failed to generate suggestions", "error")
     } else {
-      container.innerHTML = '<p class="text-sm text-slate-600">No suggestions generated. Try again.</p>'
+      container.innerHTML = '<p>No suggestions generated. Try again.</p>'
       showToast("No suggestions returned", "info")
     }
   } catch (error) {
-    loading.classList.add("hidden")
-    generateBtn.disabled = false
-    generateBtn.classList.remove("opacity-60", "cursor-not-allowed")
-    container.innerHTML = `<p class="text-sm text-red-600">Error: ${escapeHtml(error.message || String(error))}</p>`
+    console.error("Popup Error:", error)
+    container.innerHTML = `<div class="error-box"><b>Error:</b> ${escapeHtml(error.message || String(error))}</div>`
     showToast("Error generating suggestions", "error")
+  } finally {
+    // --- Restore UI State ---
+    generateBtn.disabled = false
+    formBody.disabled = false
+    generateBtn.innerHTML = "Generate Suggestions"
   }
 }
 
+// --- Suggestion Card Display (Updated) ---
 function displaySuggestions(suggestions) {
-  const container = document.getElementById("suggestionsContainer")
-  container.innerHTML = ""
+  container.innerHTML = "" 
 
   suggestions.forEach((suggestion, index) => {
     const div = document.createElement("div")
-    div.className = "fade-in p-3 bg-white border border-slate-200 rounded-lg hover:border-blue-400 transition-colors"
-    div.innerHTML = `
-      <p class="text-sm text-slate-800 mb-2">${escapeHtml(suggestion)}</p>
-      <div class="flex gap-2">
-        <button class="copyBtn flex-1 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 py-1 px-2 rounded transition-colors" data-index="${index}" aria-label="Copy suggestion ${index + 1}">
-          Copy
-        </button>
-        <button class="insertBtn flex-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 py-1 px-2 rounded transition-colors" data-index="${index}" aria-label="Insert suggestion ${index + 1}">
-          Insert
-        </button>
-      </div>
-    `
+    div.className = "suggestion-card fade-in"
+    
+    const p = document.createElement("p")
+    p.textContent = suggestion // Safely sets the suggestion text
+    div.appendChild(p)
+
+    const buttonGroup = document.createElement("div")
+    buttonGroup.className = "card-buttons"
+    
+    // Copy Button (Secondary)
+    const copyBtn = document.createElement("button")
+    copyBtn.className = "btn-card btn-secondary"
+    copyBtn.innerHTML = `${copyIcon} Copy`
+    copyBtn.setAttribute("aria-label", `Copy suggestion ${index + 1}`)
+    copyBtn.onclick = () => copySuggestion(suggestion)
+    
+    // Insert Button (Primary)
+    const insertBtn = document.createElement("button")
+    insertBtn.className = "btn-card btn-primary-card"
+    insertBtn.innerHTML = `${insertIcon} Insert`
+    insertBtn.setAttribute("aria-label", `Insert suggestion ${index + 1}`)
+    insertBtn.onclick = () => insertSuggestion(suggestion)
+
+    buttonGroup.appendChild(copyBtn)
+    buttonGroup.appendChild(insertBtn)
+    div.appendChild(buttonGroup)
     container.appendChild(div)
   })
+}
 
-  // Add event listeners
-  document.querySelectorAll(".copyBtn").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(suggestions[btn.dataset.index])
-        showToast("Copied to clipboard", "success")
-      } catch (e) {
-        // fallback
-        copySuggestionFallback(suggestions[btn.dataset.index])
-      }
-    })
-  })
-
-  document.querySelectorAll(".insertBtn").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      try {
-        await insertSuggestion(suggestions[btn.dataset.index])
-        showToast("Inserted into active field", "success")
-      } catch (e) {
-        showToast("Could not insert into field", "error")
-      }
-    })
-  })
+async function copySuggestion(text) {
+  try {
+    await navigator.clipboard.writeText(text)
+    showToast("Copied to clipboard", "success")
+  } catch (e) {
+    copySuggestionFallback(text)
+  }
 }
 
 function copySuggestionFallback(text) {
@@ -202,7 +201,7 @@ function copySuggestionFallback(text) {
   textarea.select()
   try {
     document.execCommand("copy")
-    showToast("Copied to clipboard", "success")
+    showToast("Copied to clipboard (fallback)", "success")
   } catch (e) {
     showToast("Copy failed", "error")
   } finally {
@@ -211,18 +210,17 @@ function copySuggestionFallback(text) {
 }
 
 async function insertSuggestion(text) {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
-  return new Promise((resolve, reject) => {
-    chrome.tabs.sendMessage(tab.id, { action: "insertText", text }, (resp) => {
-      // content script may not reply; assume success
-      resolve(true)
-    })
-    // don't wait for response; content script will handle insertion
-  })
-}
-
-function openSettings() {
-  showToast("Settings coming soon!", "info")
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+    if (!tab) throw new Error("No active tab found.")
+    
+    await chrome.tabs.sendMessage(tab.id, { action: "insertText", text })
+    showToast("Inserted into active field", "success")
+    // window.close() // You can uncomment this to close the popup on insert
+  } catch (e) {
+    console.error("Insert failed:", e)
+    showToast("Could not insert. Click in a text field first.", "error")
+  }
 }
 
 function escapeHtml(text) {

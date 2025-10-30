@@ -4,33 +4,87 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Smart Reply Assistant</title>
-  <script src="vendor/tailwindcss.js"></script>
-  <style>
-    body {
-      width: 420px;
-      max-width: 92vw;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
-    .fade-in {
-      animation: fadeIn 0.3s ease-in;
-    }
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    #toast { z-index: 9999; }
-  </style>
+  <link rel="stylesheet" href="popup.css" />
 </head>
-<body class="bg-gradient-to-br from-slate-50 to-slate-100">
-  <div id="root" class="p-4"></div>
+
+<body>
+  <div id="mainView" class="view">
+    <div class="space-y-4">
+      <div class="header">
+        <h1>Smart Reply</h1>
+        <button id="settingsBtn" class="btn btn-icon" aria-label="Settings">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-1.007 1.11-.11.55.897 1.11.897 1.66 0 .55-.897 1.02-.332 1.11.11.09.542-.217 1.028-.707 1.226-.49.198-1.043.297-1.606.297s-1.116-.1-1.606-.297c-.49-.198-.797-.684-.707-1.226zM11.994 12c.552 0 1-.448 1-1s-.448-1-1-1-1 .448-1 1 .448 1 1 1zM11.994 12c-3.145 0-5.719-2.502-5.719-5.615S8.85 1.01 11.994 1.01s5.719 2.502 5.719 5.615c0 1.343-.47 2.573-1.261 3.545-.17.13-.306.27-.42.414-.093.12-.176.243-.25.368-.21.35-.38.72-.514 1.11-.12.35-.207.72-.257 1.11a.75.75 0 01-.75.75H11.5a.75.75 0 01-.75-.75c-.05-.39-.137-.76-.257-1.11-.134-.39-.304-.76-.514-1.11-.074-.125-.157-.248-.25-.368a6.3 6.3 0 01-.42-.414C6.67 10.33 6.2 9.1 6.2 7.76 6.2 4.647 8.85 2.14 11.994 2.14s5.719 2.507 5.719 5.62c0 1.34-.47 2.57-1.261 3.545-.17.13-.306.27-.42.414-.093.12-.176.243-.25.368-.21.35-.38.72-.514 1.11-.12.35-.207.72-.257 1.11a.75.75 0 01-.75.75H11.5a.75.75 0 01-.75-.75c-.05-.39-.137-.76-.257-1.11-.134-.39-.304-.76-.514-1.11-.074-.125-.157-.248-.25-.368a6.3 6.3 0 01-.42-.414C6.67 10.33 6.2 9.1 6.2 7.76zM11.994 12a1 1 0 100-2 1 1 0 000 2z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11.994 12c-3.145 0-5.719-2.502-5.719-5.615S8.85 1.01 11.994 1.01s5.719 2.502 5.719 5.615c0 1.343-.47 2.573-1.261 3.545-.17.13-.306.27-.42.414-.093.12-.176.243-.25.368-.21.35-.38.72-.514 1.11-.12.35-.207.72-.257 1.11a.75.75 0 01-.75.75H11.5a.75.75 0 01-.75-.75c-.05-.39-.137-.76-.257-1.11-.134-.39-.304-.76-.514-1.11-.074-.125-.157-.248-.25-.368a6.3 6.3 0 01-.42-.414C6.67 10.33 6.2 9.1 6.2 7.76c0-3.148 2.575-5.65 5.719-5.65s5.719 2.502 5.719 5.65c0 1.34-.47 2.57-1.261 3.545-.17.13-.306.27-.42.414-.093.12-.176.243-.25.368-.21.35-.38.72-.514 1.11-.12.35-.207.72-.257 1.11a.75.75 0 01-.75.75H11.5a.75.75 0 01-.75-.75c-.05-.39-.137-.76-.257-1.11-.134-.39-.304-.76-.514-1.11-.074-.125-.157-.248-.25-.368a6.3 6.3 0 01-.42-.414C6.67 10.33 6.2 9.1 6.2 7.76zM11.994 12a1 1 0 100-2 1 1 0 000 2z" />
+          </svg>
+        </button>
+      </div>
+
+      <fieldset id="formBody" class="space-y-4" style="border:none; padding:0; margin:0;">
+        <div class="form-group">
+          <label for="messageInput">Message to Reply To</label>
+          <textarea
+            id="messageInput"
+            class="form-control"
+            rows="3"
+            placeholder="Paste message or highlight text..."
+            aria-label="Message to reply to"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="styleSelect">Tone</label>
+          <select
+            id="styleSelect"
+            class="form-control"
+            aria-label="Tone"
+          >
+            <option value="professional">Professional</option>
+            <option value="friendly">Friendly</option>
+            <option value="formal">Formal</option>
+            <option value="short">Short & Concise</option>
+            <option value="descriptive">Detailed & Descriptive</option>
+          </select>
+        </div>
+      </fieldset>
+
+      <button id="generateBtn" class="btn btn-primary" aria-live="polite">
+        Generate Suggestions
+      </button>
+
+      <div id="suggestionsContainer" class="space-y-4"></div>
+    </div>
+  </div>
+
+  <div id="settingsView" class="view hidden-view">
+    <div class="space-y-4">
+      <div class="header">
+        <button id="backBtn" class="btn btn-icon" aria-label="Back">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+          </svg>
+        </button>
+        <h1 style="flex-grow: 1; margin-left: 8px;">Settings</h1>
+      </div>
+
+      <div class="form-group">
+        <label for="backendUrlInput">Backend API URL</label>
+        <input
+          type="url"
+          id="backendUrlInput"
+          class="form-control"
+          placeholder="http://localhost:5006/api/suggest-reply"
+        />
+      </div>
+
+      <button id="saveBtn" class="btn btn-primary">
+        Save
+      </button>
+    </div>
+  </div>
+
+  <div id="toast" class="hidden"></div>
+
   <script src="popup.js"></script>
 </body>
 </html>
