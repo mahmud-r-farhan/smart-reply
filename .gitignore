@@ -1,2 +1,9 @@
 # dependencies
-/node_modules
+node_modules
+
+# env
+.env
+
+# others
+package-lock.json
+pnpm-lock.yaml
