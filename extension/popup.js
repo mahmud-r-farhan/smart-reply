@@ -17,10 +17,7 @@ const backBtn = document.getElementById("backBtn")
 const backendUrlInput = document.getElementById("backendUrlInput")
 const saveBtn = document.getElementById("saveBtn")
 
-// Toast element
-const toast = document.getElementById("toast")
-
-// --- SVGs for UI (now with no classes) ---
+// --- SVGs for UI ---
 const spinnerIcon = `
   <svg class="spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -88,20 +85,7 @@ async function saveSettings() {
   const newUrl = backendUrlInput.value.trim() || defaultBackendUrl
   await chrome.storage.sync.set({ backendUrl: newUrl })
   backendUrlInput.value = newUrl
-  showToast("Settings saved!", "success")
   closeSettings()
-}
-
-// --- Toast Notification (Updated) ---
-function showToast(message, type = "info", timeout = 2500) {
-  toast.textContent = message
-  // Use CSS classes for type
-  toast.className = type // "success", "error", or "info"
-  
-  clearTimeout(toast._timeout)
-  toast._timeout = setTimeout(() => {
-    toast.className = "hidden"
-  }, timeout)
 }
 
 // --- Core App Logic ---
@@ -110,7 +94,7 @@ async function generateSuggestions() {
   const style = styleSelect.value
 
   if (!message) {
-    showToast("Please enter a message.", "error")
+    alert("Please enter a message.")
     return
   }
 
@@ -129,18 +113,14 @@ async function generateSuggestions() {
 
     if (response?.suggestions && response.suggestions.length > 0) {
       displaySuggestions(response.suggestions)
-      showToast("Suggestions generated", "success")
     } else if (response?.error) {
       container.innerHTML = `<div class="error-box"><b>Error:</b> ${escapeHtml(response.error)}</div>`
-      showToast("Failed to generate suggestions", "error")
     } else {
       container.innerHTML = '<p>No suggestions generated. Try again.</p>'
-      showToast("No suggestions returned", "info")
     }
   } catch (error) {
     console.error("Popup Error:", error)
     container.innerHTML = `<div class="error-box"><b>Error:</b> ${escapeHtml(error.message || String(error))}</div>`
-    showToast("Error generating suggestions", "error")
   } finally {
     // --- Restore UI State ---
     generateBtn.disabled = false
@@ -149,7 +129,7 @@ async function generateSuggestions() {
   }
 }
 
-// --- Suggestion Card Display (Updated) ---
+// --- Suggestion Card Display ---
 function displaySuggestions(suggestions) {
   container.innerHTML = "" 
 
@@ -158,20 +138,20 @@ function displaySuggestions(suggestions) {
     div.className = "suggestion-card fade-in"
     
     const p = document.createElement("p")
-    p.textContent = suggestion // Safely sets the suggestion text
+    p.textContent = suggestion
     div.appendChild(p)
 
     const buttonGroup = document.createElement("div")
     buttonGroup.className = "card-buttons"
     
-    // Copy Button (Secondary)
+    // Copy Button
     const copyBtn = document.createElement("button")
     copyBtn.className = "btn-card btn-secondary"
     copyBtn.innerHTML = `${copyIcon} Copy`
     copyBtn.setAttribute("aria-label", `Copy suggestion ${index + 1}`)
     copyBtn.onclick = () => copySuggestion(suggestion)
     
-    // Insert Button (Primary)
+    // Insert Button
     const insertBtn = document.createElement("button")
     insertBtn.className = "btn-card btn-primary-card"
     insertBtn.innerHTML = `${insertIcon} Insert`
@@ -188,7 +168,7 @@ function displaySuggestions(suggestions) {
 async function copySuggestion(text) {
   try {
     await navigator.clipboard.writeText(text)
-    showToast("Copied to clipboard", "success")
+    alert("Copied to clipboard.")
   } catch (e) {
     copySuggestionFallback(text)
   }
@@ -201,9 +181,9 @@ function copySuggestionFallback(text) {
   textarea.select()
   try {
     document.execCommand("copy")
-    showToast("Copied to clipboard (fallback)", "success")
+    alert("Copied to clipboard (fallback).")
   } catch (e) {
-    showToast("Copy failed", "error")
+    alert("Copy failed.")
   } finally {
     textarea.remove()
   }
@@ -215,11 +195,10 @@ async function insertSuggestion(text) {
     if (!tab) throw new Error("No active tab found.")
     
     await chrome.tabs.sendMessage(tab.id, { action: "insertText", text })
-    showToast("Inserted into active field", "success")
-    // window.close() // You can uncomment this to close the popup on insert
+    alert("Inserted into active field.")
   } catch (e) {
     console.error("Insert failed:", e)
-    showToast("Could not insert. Click in a text field first.", "error")
+    alert("Could not insert. Click in a text field first.")
   }
 }
 

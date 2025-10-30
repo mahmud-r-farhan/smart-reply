@@ -198,22 +198,3 @@ textarea.form-control {
   color: #c53030;
   font-size: 0.875rem;
 }
-
-
-/* --- Toast Notification --- */
-#toast {
-  position: fixed;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: white;
-  z-index: 9999;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-#toast.success { background-color: #38a169; }
-#toast.error   { background-color: #e53e3e; }
-#toast.info    { background-color: #2d3748; }
