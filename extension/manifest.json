@@ -3,8 +3,15 @@
   "name": "Smart Reply Assistant",
   "version": "0.0.1",
   "description": "Get AI-powered smart reply suggestions for emails and messages",
-  "permissions": ["activeTab", "scripting", "storage", "webRequest"],
-  "host_permissions": ["<all_urls>"],
+  "permissions": [
+    "activeTab", 
+    "scripting", 
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>",
+    "http://localhost:5006/"
+  ],
   "background": {
     "service_worker": "background.js"
   },

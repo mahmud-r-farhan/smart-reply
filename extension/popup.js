@@ -1,5 +1,4 @@
 const root = document.getElementById("root")
-const chrome = window.chrome
 
 // Initialize popup
 async function initPopup() {
@@ -21,7 +20,6 @@ async function getSelectedText(tabId) {
 function render(selectedText) {
   root.innerHTML = `
     <div class="space-y-4">
-      <!-- Header -->
       <div class="flex items-center justify-between">
         <h1 class="text-lg font-bold text-slate-900">Smart Reply</h1>
         <button id="settingsBtn" class="text-slate-500 hover:text-slate-700" aria-label="Settings">
@@ -29,7 +27,6 @@ function render(selectedText) {
         </button>
       </div>
 
-      <!-- Message Input -->
       <div>
         <label for="messageInput" class="block text-sm font-medium text-slate-700 mb-2">Message</label>
         <textarea
@@ -41,7 +38,6 @@ function render(selectedText) {
         ></textarea>
       </div>
 
-      <!-- Style Selector -->
       <div>
         <label for="styleSelect" class="block text-sm font-medium text-slate-700 mb-2">Tone</label>
         <select
@@ -57,7 +53,6 @@ function render(selectedText) {
         </select>
       </div>
 
-      <!-- Generate Button -->
       <button
         id="generateBtn"
         class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
@@ -66,17 +61,14 @@ function render(selectedText) {
         Generate Suggestions
       </button>
 
-      <!-- Loading State -->
       <div id="loading" class="hidden text-center py-4" role="status" aria-hidden="true">
         <div class="inline-block animate-spin">⏳</div>
         <p class="text-sm text-slate-600 mt-2">Generating suggestions...</p>
       </div>
 
-      <!-- Suggestions Container -->
       <div id="suggestionsContainer" class="space-y-2"></div>
     </div>
 
-    <!-- Toast -->
     <div id="toast" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 hidden px-4 py-2 rounded shadow text-sm"></div>
   `
 
@@ -142,7 +134,7 @@ async function generateSuggestions() {
       displaySuggestions(response.suggestions)
       showToast("Suggestions generated", "success")
     } else if (response?.error) {
-      container.innerHTML = `<p class="text-sm text-red-600">Error: ${escapeHtml(response.error)}</p>`
+      container.innerHTML = `<p class="text-sm text-red-600">${escapeHtml(response.error)}</p>`
       showToast("Failed to generate suggestions", "error")
     } else {
       container.innerHTML = '<p class="text-sm text-slate-600">No suggestions generated. Try again.</p>'

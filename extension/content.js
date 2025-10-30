@@ -1,5 +1,3 @@
-const chrome = window.chrome
-
 // Listen for messages from popup or background
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "getSelectedText") {

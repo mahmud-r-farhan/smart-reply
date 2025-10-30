@@ -1,5 +1,3 @@
-const chrome = window.chrome
-
 // Listen for messages from content script or popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "getSuggestions") {
