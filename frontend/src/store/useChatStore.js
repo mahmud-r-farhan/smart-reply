@@ -5,13 +5,14 @@ export const useChatStore = create((set) => ({
   suggestions: [],
   loading: false,
   style: "professional",
+  error: null,
 
   setMessage: (msg) => set({ message: msg }),
   setStyle: (sty) => set({ style: sty }),
-  clear: () => set({ message: "", suggestions: [] }),
+  clear: () => set({ message: "", suggestions: [], error: null }),
 
   getSuggestions: async () => {
-    set({ loading: true, suggestions: [] });
+    set({ loading: true, suggestions: [], error: null });
     try {
       const state = useChatStore.getState();
       const res = await fetch(import.meta.env.VITE_API_ENDPOINT, {
@@ -26,7 +27,7 @@ export const useChatStore = create((set) => ({
 
       set({ suggestions: data?.suggestions || [] });
     } catch (err) {
-      set({ suggestions: [`Error: ${err.message}`] });
+      set({ error: err.message, suggestions: [] });
     } finally {
       set({ loading: false });
     }

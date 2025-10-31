@@ -7,5 +7,3 @@ node_modules
 # others
 package-lock.json
 pnpm-lock.yaml
-
-extension.pem

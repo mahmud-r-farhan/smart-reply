@@ -1,16 +1,45 @@
-# React + Vite
+# Smart Reply Web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Smart Reply Web is a React-based web application that generates AI-powered reply suggestions for incoming messages. Users can input a message, select a response style (e.g., professional, friendly), and receive multiple tailored suggestions. It's designed for quick, context-aware responses and is also available as a Chrome extension.
 
-Currently, two official plugins are available:
+Built with:
+- React (with Hooks)
+- Zustand for state management
+- Framer Motion for animations
+- Lucide React for icons
+- Tailwind CSS for styling (implied from class names)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
+- **Message Input**: Auto-resizing textarea for pasting received messages.
+- **Style Selection**: Choose from Professional, Friendly, Humorous, or Concise styles with tooltips.
+- **AI Suggestions**: Generates 4 reply options via API (mocked in demo; replace with real endpoint).
+- **Copy & Regenerate**: Easy copy to clipboard and regenerate buttons.
+- **Loading & Error Handling**: Spinner during generation, error messages.
+- **Dark Mode UI**: Gradient background with animated effects for modern look.
+- **Accessibility**: Keyboard shortcuts (Ctrl/Cmd + Enter to generate), ARIA labels.
 
-## React Compiler
+## Installation
+1. Clone the repo: `git clone https://github.com/mahmud-r-farhan/smart-reply`
+2. Install dependencies: `cd frontend/npm install`
+3. Set up environment: Add `VITE_API_ENDPOINT` in `.env` for the backend API.
+4. Run locally: `npm run dev`
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Usage
+- Paste a message into the textarea.
+- Select a style.
+- Click "Generate Replies" or use shortcut.
+- View suggestions, copy, or regenerate.
 
-## Expanding the ESLint configuration
+## Components
+- **Header**: App title and description.
+- **StyleSelector**: Buttons for style choices with info toggle.
+- **InputSection**: Message input, submit/clear buttons.
+- **SuggestionsSection**: Displays generated replies with copy functionality.
+- **EmptyState**: Placeholder when no input.
+- **Footer**: Credits and notes.
+- **TextareaAutoResize**: Custom auto-resizing textarea.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## API Integration
+The app fetches suggestions from `VITE_API_ENDPOINT` via POST with `{ message, style }`. Update `useChatStore` for production.
+
+---
