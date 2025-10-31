@@ -2,27 +2,31 @@ import { create } from "zustand";
 
 export const useChatStore = create((set) => ({
   message: "",
-  suggestion: "",
+  suggestions: [],
   loading: false,
-  
-  setMessage: (msg) => set({ message: msg }),
-  clear: () => set({ message: "", suggestion: "" }),
+  style: "professional",
 
-  getSuggestion: async () => {
-    set({ loading: true, suggestion: "" });
+  setMessage: (msg) => set({ message: msg }),
+  setStyle: (sty) => set({ style: sty }),
+  clear: () => set({ message: "", suggestions: [] }),
+
+  getSuggestions: async () => {
+    set({ loading: true, suggestions: [] });
     try {
+      const state = useChatStore.getState();
       const res = await fetch(import.meta.env.VITE_API_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: useChatStore.getState().message }),
+        body: JSON.stringify({ message: state.message, style: state.style }),
       });
 
       if (!res.ok) throw new Error(`Server error: ${res.status}`);
+
       const data = await res.json();
 
-      set({ suggestion: data?.suggestion || "No suggestion received." });
+      set({ suggestions: data?.suggestions || [] });
     } catch (err) {
-      set({ suggestion: `Error: ${err.message}` });
+      set({ suggestions: [`Error: ${err.message}`] });
     } finally {
       set({ loading: false });
     }
