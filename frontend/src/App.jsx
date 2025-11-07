@@ -2,24 +2,25 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { useChatStore } from "./store/useChatStore";
 import Header from "./components/Header.jsx";
+import ModeSelector from "./components/ModeSelector.jsx";  // New import
 import StyleSelector from "./components/StyleSelector.jsx";
 import InputSection from "./components/InputSection.jsx";
-import SuggestionsSection from "./components/SuggestionsSection.jsx";
+import ResultsSection from "./components/ResultsSection.jsx";  // Renamed import
 import EmptyState from "./components/EmptyState.jsx";
 import Footer from "./components/Footer.jsx";
 
 export default function App() {
-  const { message, suggestions, loading, style, error, setMessage, setStyle, getSuggestions, clear } = useChatStore();
+  const { input, results, loading, style, mode, error, setInput, setStyle, setMode, getResults, clear } = useChatStore();
   const [copiedIndex, setCopiedIndex] = useState(null);
   const [showStyleInfo, setShowStyleInfo] = useState(false);
 
   const handleSubmit = async () => {
-    if (!message.trim()) return;
-    await getSuggestions();
+    if (!input.trim()) return;
+    await getResults();
   };
 
   const handleRegenerate = async () => {
-    await getSuggestions();
+    await getResults();
   };
 
   const handleCopy = (text, index) => {
@@ -54,6 +55,8 @@ export default function App() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-3xl shadow-2xl overflow-hidden"
         >
+          <ModeSelector mode={mode} setMode={setMode} />  {/* New component */}
+
           <StyleSelector 
             style={style} 
             setStyle={setStyle} 
@@ -62,24 +65,26 @@ export default function App() {
           />
 
           <InputSection 
-            message={message} 
-            setMessage={setMessage} 
+            input={input} 
+            setInput={setInput} 
             handleSubmit={handleSubmit} 
             loading={loading} 
             error={error} 
             clear={clear} 
+            mode={mode}  // Pass mode
           />
 
-          <SuggestionsSection 
-            suggestions={suggestions} 
+          <ResultsSection 
+            results={results} 
             loading={loading} 
             handleRegenerate={handleRegenerate} 
             copiedIndex={copiedIndex} 
             setCopiedIndex={setCopiedIndex} 
             handleCopy={handleCopy} 
+            mode={mode}  // Pass mode
           />
 
-          <EmptyState loading={loading} suggestions={suggestions} message={message} />
+          <EmptyState loading={loading} results={results} input={input} />
         </motion.div>
 
         <Footer />

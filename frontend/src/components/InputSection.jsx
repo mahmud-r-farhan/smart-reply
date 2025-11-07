@@ -3,15 +3,22 @@ import { motion } from "framer-motion";
 import { Zap, Trash2 } from "lucide-react";
 import TextareaAutoResize from "./TextareaAutoResize";
 
-const InputSection = ({ message, setMessage, handleSubmit, loading, error, clear }) => {
+const InputSection = ({ input, setInput, handleSubmit, loading, error, clear, mode }) => {
+  const placeholder = mode === "reply" 
+    ? "Paste the message you received here... (Ctrl/Cmd + Enter to generate)"
+    : "Paste your text to enhance here... (Ctrl/Cmd + Enter to enhance)";
+
+  const buttonText = mode === "reply" ? "Generate Replies" : "Enhance Text";
+  const loadingText = mode === "reply" ? "Generating..." : "Enhancing...";
+
   return (
     <div className="p-6">
       <div className="relative">
         <TextareaAutoResize
           className="w-full min-h-[120px] max-h-[300px] p-4 bg-slate-800/50 border border-slate-700 rounded-2xl text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent overflow-hidden transition-all"
-          placeholder="Paste the message you received here... (Ctrl/Cmd + Enter to generate)"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          placeholder={placeholder}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
               handleSubmit();
@@ -19,7 +26,7 @@ const InputSection = ({ message, setMessage, handleSubmit, loading, error, clear
           }}
         />
         <div className="absolute bottom-4 right-4 text-xs text-slate-500">
-          {message.length} / 2000
+          {input.length} / 2000
         </div>
       </div>
 
@@ -36,7 +43,7 @@ const InputSection = ({ message, setMessage, handleSubmit, loading, error, clear
       <div className="flex gap-3 mt-4">
         <button
           onClick={handleSubmit}
-          disabled={loading || !message.trim()}
+          disabled={loading || !input.trim()}
           className="flex-1 flex items-center justify-center gap-2 py-3.5 px-6 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-500/30"
         >
           {loading ? (
@@ -46,12 +53,12 @@ const InputSection = ({ message, setMessage, handleSubmit, loading, error, clear
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
               />
-              <span>Generating...</span>
+              <span>{loadingText}</span>
             </>
           ) : (
             <>
               <Zap className="w-5 h-5" />
-              <span>Generate Replies</span>
+              <span>{buttonText}</span>
             </>
           )}
         </button>

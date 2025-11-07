@@ -2,8 +2,11 @@ import React from "react";
 import { motion } from "framer-motion";
 import { RotateCcw, Copy, Check } from "lucide-react";
 
-const SuggestionsSection = ({ suggestions, loading, handleRegenerate, copiedIndex, setCopiedIndex, handleCopy }) => {
-  if (suggestions.length === 0) return null;
+const ResultsSection = ({ results, loading, handleRegenerate, copiedIndex, setCopiedIndex, handleCopy, mode }) => {
+  if (results.length === 0) return null;
+
+  const title = mode === "reply" ? "AI-Generated Responses" : "AI-Enhanced Versions";
+  const regenerateTitle = mode === "reply" ? "Regenerate with same settings" : "Re-enhance with same settings";
 
   return (
     <div className="p-6 pt-0">
@@ -14,16 +17,16 @@ const SuggestionsSection = ({ suggestions, loading, handleRegenerate, copiedInde
           transition={{ duration: 1.5, repeat: Infinity }}
         />
         <h2 className="text-lg font-semibold text-slate-200">
-          AI-Generated Responses
+          {title}
         </h2>
         <span className="text-sm text-slate-500 ml-auto">
-          {suggestions.length} suggestions
+          {results.length} {mode === "reply" ? "suggestions" : "versions"}
         </span>
         <button
           onClick={handleRegenerate}
           disabled={loading}
           className="ml-4 flex items-center gap-1 text-sm text-indigo-400 hover:text-indigo-300 transition"
-          title="Regenerate with same settings"
+          title={regenerateTitle}
         >
           <RotateCcw className="w-4 h-4" />
           Regenerate
@@ -44,7 +47,7 @@ const SuggestionsSection = ({ suggestions, loading, handleRegenerate, copiedInde
           }
         }}
       >
-        {suggestions.map((sug, index) => (
+        {results.map((item, index) => (
           <motion.div
             key={index}
             variants={{
@@ -58,13 +61,13 @@ const SuggestionsSection = ({ suggestions, loading, handleRegenerate, copiedInde
                 {index + 1}
               </div>
               <p className="flex-1 text-slate-300 leading-relaxed pr-12">
-                {sug}
+                {item}
               </p>
               <button
-                onClick={() => handleCopy(sug, index)}
+                onClick={() => handleCopy(item, index)}
                 className="absolute top-4 right-4 p-2 bg-slate-700/50 text-slate-400 rounded-lg hover:bg-indigo-500 hover:text-white transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
                 title="Copy to clipboard"
-                aria-label="Copy suggestion"
+                aria-label="Copy item"
               >
                 {copiedIndex === index ? (
                   <Check className="w-4 h-4" />
@@ -80,5 +83,4 @@ const SuggestionsSection = ({ suggestions, loading, handleRegenerate, copiedInde
   );
 };
 
-
-export default SuggestionsSection;
+export default ResultsSection;
