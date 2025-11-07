@@ -1,6 +1,6 @@
-#  Smart Reply
+# Smart Reply & Enhance
 
-> **AI-powered Smart Reply Assistant** — Instantly generate smart, context-aware replies for your workflow: messages, emails, chats, and more — directly from your browser!
+> **AI-powered Smart Reply & Enhance Assistant:** Instantly generate smart, context-aware replies or enhance your own text for your workflow: messages, emails, chats, and more directly from your browser or web app!
 
 ![Smart Reply Logo](./extension/images/icon-16.png)![Smart Reply Logo](./extension/images/icon-48.png)
 
@@ -8,26 +8,30 @@
 
 ## 🚀 Overview
 
-**Smart Reply** is a Chrome extension + backend service that uses LLMs (via [OpenRouter](https://openrouter.ai)) to suggest replies intelligently based on the context of your communication.
+**Smart Reply & Enhance** is a comprehensive AI tool suite consisting of a Chrome extension, a React-based web application, and a shared backend service. It uses LLMs (via [OpenRouter](https://openrouter.ai)) to suggest replies intelligently based on the context of your communication or to improve and refine your own text.
 
-It helps boost productivity for anyone who writes repetitive messages — freelancers, support agents, or busy professionals.
+It helps boost productivity for anyone who writes repetitive messages or needs quick text improvements as freelancers, support agents, or busy professionals. The Chrome extension provides on-the-go access directly in your browser, while the web app offers a full-featured interface for deeper interactions.
 
 ---
 
 ## ✨ Features
 
-- 💬 **Four AI Reply Suggestions per Message** – Get up to 4 context-aware replies instantly for any message.  
-- 🎨 **Customizable Reply Style** – Specify a style like `"professional"`, `"friendly"`, or `"concise"` for your suggestions.  
+- 💬 **Four AI Reply Suggestions per Message** – Get up to 4 context-aware replies instantly for any message in Smart Reply mode (available in both extension and web).  
+- ✍️ **Four AI Text Enhancements** – Improve your own text with 4 variations focusing on grammar, clarity, conciseness, structure, and effectiveness in Smart Enhance mode (like Grammarly; available in both extension and web).  
+- 🎨 **Customizable Style** – Choose from Professional, Friendly, Humorous, or Concise styles with tooltips for descriptions.  
+- 🔄 **Mode Switching** – Easily toggle between Smart Reply and Smart Enhance in the extension popup or web interface.  
 - ⚙️ **LLM Agnostic** – Works with any OpenRouter-supported model (free or paid).  
 - 🔐 **Custom API Keys** – Bring your own API key for privacy & flexibility.  
-- 🌐 **Optional Cloud Backend** – Deploy the backend anywhere (Render, VPS, Fly.io, Railway, etc.).  
 - 🐳 **Docker Support** – Run the backend instantly using Docker.  
+- **Extension-Specific**: Insert suggestions directly into text fields (e.g., emails, chats); auto-detect selected text.  
+- **Web-Specific**: Auto-resizing textarea, animated UI with Framer Motion, developer info panel, keyboard shortcuts (Ctrl/Cmd + Enter), and accessibility features.
 
 ---
 
 ## 🧩 Tech Stack
 
 - **Frontend (Extension):** Chrome Manifest V3, JavaScript, HTML, CSS  
+- **Frontend (Web):** React, Zustand for state management, Framer Motion for animations, Lucide React for icons, Tailwind CSS for styling  
 - **Backend:** Node.js + Express  
 - **AI Integration:** OpenRouter API  
 
@@ -35,15 +39,15 @@ It helps boost productivity for anyone who writes repetitive messages — freela
 
 ## ⚙️ Setup Instructions
 
-### 1️⃣ Clone the Repository
+### 1 Clone the Repository
 ```bash
 git clone https://github.com/mahmud-r-farhan/smart-reply.git
 cd smart-reply
-````
+```
 
 ---
 
-### 2️⃣ Backend Setup
+### 2 Backend Setup
 
 #### Option A — Local Setup
 
@@ -82,7 +86,7 @@ cd smart-reply
 
 ---
 
-### 3️⃣ Install the Chrome Extension
+### 3 Install the Chrome Extension
 
 1. Open Chrome and go to:
 
@@ -99,17 +103,35 @@ cd smart-reply
 
 ---
 
-### 4️⃣ Connect Backend
+### 4 Set Up the Web Frontend
 
-1. Click on the extension icon → **Settings**.
-2. Paste your API key with `/api/suggest-reply` (default: http://localhost:5006/api/suggest-reply).
-3. Save and start enjoying **AI Smart Replies**!
+1. Install dependencies:
+
+   ```bash
+   cd frontend
+   npm install
+   ```
+2. Set up environment: Add `VITE_API_ENDPOINT` in `.env` for the backend API base URL (e.g., `VITE_API_ENDPOINT=http://localhost:5006/api`).
+3. Run locally:
+
+   ```bash
+   npm run dev
+   ```
+
+---
+
+### 5 Connect Backend
+
+- **For Extension**: Click on the extension icon → **Settings**. Paste your backend base URL (e.g., `http://localhost:5006/api`). Save.
+- **For Web**: The `.env` handles the connection automatically.
+
+> Note: The tools automatically append `/suggest-reply` or `/enhance-text` based on the selected mode.
 
 ---
 
 ## 📡 API Highlights (Backend)
 
-* **POST /api/suggest-reply** – Generate multiple reply suggestions
+* **POST /api/suggest-reply** – Generate multiple reply suggestions (Smart Reply mode)
 
   ```json
   {
@@ -130,25 +152,38 @@ cd smart-reply
     ]
   }
   ```
+
+* **POST /api/enhance-text** – Generate multiple enhanced versions of text (Smart Enhance mode)
+
+  ```json
+  {
+    "text": "We need to reschedul the meeting because of conflict.",
+    "style": "professional"
+  }
+  ```
+
+  Response:
+
+  ```json
+  {
+    "enhancements": [
+      "We need to reschedule the meeting due to a scheduling conflict.",
+      "Due to a conflict, let's reschedule the meeting at your earliest convenience.",
+      "I apologize, but a conflict has arisen—could we reschedule the meeting?",
+      "There's a scheduling conflict; please suggest alternative times for the meeting."
+    ]
+  }
+  ```
+
 * **GET /health** – Health check endpoint returning `{ "status": "ok" }`.
 
-> For detailed API usage, rate limiting, and advanced backend setup, see [Smart Reply Backend README](./backend/README.md).
 
 ---
 
 ## ☁️ Deploy Backend on the Cloud
 
 You can deploy using **Render**, **VPS**, **Fly.io**, or **Railway.app**.
-Set `OPENROUTER_API_KEY` in environment variables, then share the endpoint with your Chrome extension.
-
----
-
-## 🧭 Roadmap / To-Do
-
-* [ ] Add user authentication for cloud backend
-* [ ] Support GPT-4.1 and Claude 3.5/4.1 models
-* [ ] Add context memory for thread-based replies
-* [ ] Publish to Chrome Web Store
+Set `OPENROUTER_API_KEY` in environment variables, then share the endpoint with your Chrome extension or web app.
 
 ---
 

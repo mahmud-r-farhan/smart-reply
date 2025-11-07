@@ -8,80 +8,94 @@
 </head>
 
 <body>
-  <div id="mainView" class="view">
-    <div class="space-y-4">
-      <div class="header">
-        <h1>Smart Reply</h1>
-        <button id="settingsBtn" class="btn btn-icon" aria-label="Settings">
-           <?xml version="1.0" encoding="utf-8"?>
-            <svg fill="#000000" width="800px" height="800px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" data-name="Layer 1">
-              <path d="M19.9,12.66a1,1,0,0,1,0-1.32L21.18,9.9a1,1,0,0,0,.12-1.17l-2-3.46a1,1,0,0,0-1.07-.48l-1.88.38a1,1,0,0,1-1.15-.66l-.61-1.83A1,1,0,0,0,13.64,2h-4a1,1,0,0,0-1,.68L8.08,4.51a1,1,0,0,1-1.15.66L5,4.79A1,1,0,0,0,4,5.27L2,8.73A1,1,0,0,0,2.1,9.9l1.27,1.44a1,1,0,0,1,0,1.32L2.1,14.1A1,1,0,0,0,2,15.27l2,3.46a1,1,0,0,0,1.07.48l1.88-.38a1,1,0,0,1,1.15.66l.61,1.83a1,1,0,0,0,1,.68h4a1,1,0,0,0,.95-.68l.61-1.83a1,1,0,0,1,1.15-.66l1.88.38a1,1,0,0,0,1.07-.48l2-3.46a1,1,0,0,0-.12-1.17ZM18.41,14l.8.9-1.28,2.22-1.18-.24a3,3,0,0,0-3.45,2L12.92,20H10.36L10,18.86a3,3,0,0,0-3.45-2l-1.18.24L4.07,14.89l.8-.9a3,3,0,0,0,0-4l-.8-.9L5.35,6.89l1.18.24a3,3,0,0,0,3.45-2L10.36,4h2.56l.38,1.14a3,3,0,0,0,3.45,2l1.18-.24,1.28,2.22-.8.9A3,3,0,0,0,18.41,14ZM11.64,8a4,4,0,1,0,4,4A4,4,0,0,0,11.64,8Zm0,6a2,2,0,1,1,2-2A2,2,0,0,1,11.64,14Z"/>
-            </svg>
+ <!-- Main View -->
+  <div id="mainView" class="view active">
+    <div class="container stack">
+      <!-- Header -->
+      <header class="header">
+        <h1 class="header-title">Smart Reply</h1>
+        <button id="settingsBtn" class="btn btn-ghost btn-icon" aria-label="Settings">
+          <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
         </button>
+      </header>
+
+      <!-- Mode Tabs -->
+      <div class="tabs">
+        <button id="modeReply" class="tab active">Reply</button>
+        <button id="modeEnhance" class="tab">Enhance</button>
       </div>
 
-      <fieldset id="formBody" class="space-y-4" style="border:none; padding:0; margin:0;">
+      <!-- Form -->
+      <div class="stack">
         <div class="form-group">
-          <label for="messageInput">Message to Reply To</label>
+          <label class="label" id="inputLabel" for="inputText">Message to Reply To</label>
           <textarea
-            id="messageInput"
-            class="form-control"
-            rows="3"
-            placeholder="Paste message or highlight text..."
-            aria-label="Message to reply to"
+            id="inputText"
+            class="textarea"
+            placeholder="Paste the message you want to reply to..."
+            aria-label="Input text"
           ></textarea>
         </div>
 
         <div class="form-group">
-          <label for="styleSelect">Tone</label>
-          <select
-            id="styleSelect"
-            class="form-control"
-            aria-label="Tone"
-          >
+          <label class="label" for="styleSelect">Tone</label>
+          <select id="styleSelect" class="select" aria-label="Tone">
             <option value="professional">Professional</option>
             <option value="friendly">Friendly</option>
             <option value="formal">Formal</option>
             <option value="short">Short & Concise</option>
-            <option value="descriptive">Detailed & Descriptive</option>
           </select>
         </div>
-      </fieldset>
 
-      <button id="generateBtn" class="btn btn-primary" aria-live="polite">
-        Generate Suggestions
-      </button>
+        <button id="generateBtn" class="btn btn-primary btn-full">
+          <svg class="icon icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          Generate Suggestions
+        </button>
+      </div>
 
-      <div id="suggestionsContainer" class="space-y-4"></div>
+      <!-- Results -->
+      <div id="resultsContainer" class="stack"></div>
     </div>
   </div>
 
-  <div id="settingsView" class="view hidden-view">
-    <div class="space-y-4">
-      <div class="header">
-        <button id="backBtn" class="btn btn-icon" aria-label="Back">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-          </svg>
-        </button>
-        <h1 style="flex-grow: 1; margin-left: 8px;">Settings</h1>
-      </div>
+  <!-- Settings View -->
+  <div id="settingsView" class="view">
+    <div class="container stack">
+      <header class="header">
+        <div class="flex items-center gap-2">
+          <button id="backBtn" class="btn btn-ghost btn-icon" aria-label="Back">
+            <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+            </svg>
+          </button>
+          <h1 class="header-title">Settings</h1>
+        </div>
+      </header>
 
       <div class="form-group">
-        <label for="backendUrlInput">Backend API URL</label>
+        <label class="label" for="backendUrlInput">Backend API Base URL</label>
         <input
           type="url"
           id="backendUrlInput"
-          class="form-control"
-          placeholder="http://localhost:5006/api/suggest-reply"
+          class="input"
+          placeholder="http://localhost:5006/api"
         />
       </div>
 
-      <button id="saveBtn" class="btn btn-primary">
-        Save
+      <button id="saveBtn" class="btn btn-primary btn-full">
+        <svg class="icon icon-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+        Save Settings
       </button>
     </div>
   </div>
+
 
   <script src="popup.js"></script>
 </body>
