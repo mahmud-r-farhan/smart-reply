@@ -29,7 +29,7 @@ const Header = () => {
           </h1>
         </div>
         <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-          Generate smart replies for your messages. Also available as a{" "}
+          Generate smart replies, enhancements, or translations for your messages. Also available as a{" "}
           <a
             href="https://github.com/mahmud-r-farhan/smart-reply"
             target="_blank"

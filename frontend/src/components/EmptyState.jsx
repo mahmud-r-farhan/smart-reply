@@ -16,7 +16,7 @@ const EmptyState = ({ loading, results, input }) => {
       </div>
       <p className="text-slate-500 mb-2">Enter text to get started</p>
       <p className="text-sm text-slate-600 max-w-md mx-auto">
-        Our AI analyzes context, tone, and intent to craft responses or enhancements that sound natural and effective.
+        Our AI analyzes context, tone, and intent to craft responses, enhancements, or translations that sound natural and effective.
       </p>
     </motion.div>
   );

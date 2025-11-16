@@ -86,7 +86,7 @@ export default function SidePanel({ isOpen, onClose }) {
                 }
                 className="text-sm text-gray-400 hover:text-indigo-400 transition-colors duration-200 cursor-pointer"
               >
-                <img src="https://cdn.pixabay.com/photo/2022/01/30/13/33/github-6980894_960_720.png" alt="Gravatar" className="w-6 h-6"/>
+                <img src="https://cdn.pixabay.com/photo/2022/01/30/13/33/github-6980894_960_720.png" alt="Github" className="w-6 h-6"/>
               </button>
             </div>
           </motion.div>

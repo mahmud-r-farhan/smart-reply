@@ -2,15 +2,16 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { useChatStore } from "./store/useChatStore";
 import Header from "./components/Header.jsx";
-import ModeSelector from "./components/ModeSelector.jsx";  // New import
+import ModeSelector from "./components/ModeSelector.jsx";
 import StyleSelector from "./components/StyleSelector.jsx";
+import LanguageSelector from "./components/LanguageSelector.jsx";
 import InputSection from "./components/InputSection.jsx";
-import ResultsSection from "./components/ResultsSection.jsx";  // Renamed import
+import ResultsSection from "./components/ResultsSection.jsx";
 import EmptyState from "./components/EmptyState.jsx";
 import Footer from "./components/Footer.jsx";
 
 export default function App() {
-  const { input, results, loading, style, mode, error, setInput, setStyle, setMode, getResults, clear } = useChatStore();
+  const { input, results, loading, style, mode, language, error, setInput, setStyle, setMode, setLanguage, getResults, clear } = useChatStore();
   const [copiedIndex, setCopiedIndex] = useState(null);
   const [showStyleInfo, setShowStyleInfo] = useState(false);
 
@@ -55,7 +56,7 @@ export default function App() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-3xl shadow-2xl overflow-hidden"
         >
-          <ModeSelector mode={mode} setMode={setMode} />  {/* New component */}
+          <ModeSelector mode={mode} setMode={setMode} />
 
           <StyleSelector 
             style={style} 
@@ -64,6 +65,13 @@ export default function App() {
             setShowStyleInfo={setShowStyleInfo} 
           />
 
+          {mode === "translate" && (
+            <LanguageSelector 
+              language={language} 
+              setLanguage={setLanguage} 
+            />
+          )}
+
           <InputSection 
             input={input} 
             setInput={setInput} 
@@ -71,7 +79,7 @@ export default function App() {
             loading={loading} 
             error={error} 
             clear={clear} 
-            mode={mode}  // Pass mode
+            mode={mode}
           />
 
           <ResultsSection 
@@ -81,7 +89,7 @@ export default function App() {
             copiedIndex={copiedIndex} 
             setCopiedIndex={setCopiedIndex} 
             handleCopy={handleCopy} 
-            mode={mode}  // Pass mode
+            mode={mode}
           />
 
           <EmptyState loading={loading} results={results} input={input} />

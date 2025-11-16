@@ -5,8 +5,15 @@ import { RotateCcw, Copy, Check } from "lucide-react";
 const ResultsSection = ({ results, loading, handleRegenerate, copiedIndex, setCopiedIndex, handleCopy, mode }) => {
   if (results.length === 0) return null;
 
-  const title = mode === "reply" ? "AI-Generated Responses" : "AI-Enhanced Versions";
-  const regenerateTitle = mode === "reply" ? "Regenerate with same settings" : "Re-enhance with same settings";
+  let title = "AI-Generated Responses";
+  let regenerateTitle = "Regenerate with same settings";
+  if (mode === "enhance") {
+    title = "AI-Enhanced Versions";
+    regenerateTitle = "Re-enhance with same settings";
+  } else if (mode === "translate") {
+    title = "AI-Translated Versions";
+    regenerateTitle = "Re-translate with same settings";
+  }
 
   return (
     <div className="p-6 pt-0">
@@ -20,7 +27,7 @@ const ResultsSection = ({ results, loading, handleRegenerate, copiedIndex, setCo
           {title}
         </h2>
         <span className="text-sm text-slate-500 ml-auto">
-          {results.length} {mode === "reply" ? "suggestions" : "versions"}
+          {results.length} {mode === "reply" ? "suggestions" : mode === "enhance" ? "versions" : "translations"}
         </span>
         <button
           onClick={handleRegenerate}

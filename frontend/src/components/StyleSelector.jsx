@@ -23,7 +23,7 @@ const StyleSelector = ({ style, setStyle, showStyleInfo, setShowStyleInfo }) => 
           <Info className="w-4 h-4" />
         </button>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {styles.map((s) => (
           <motion.button
             key={s.value}

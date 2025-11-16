@@ -4,12 +4,18 @@ import { Zap, Trash2 } from "lucide-react";
 import TextareaAutoResize from "./TextareaAutoResize";
 
 const InputSection = ({ input, setInput, handleSubmit, loading, error, clear, mode }) => {
-  const placeholder = mode === "reply" 
-    ? "Paste the message you received here... (Ctrl/Cmd + Enter to generate)"
-    : "Paste your text to enhance here... (Ctrl/Cmd + Enter to enhance)";
-
-  const buttonText = mode === "reply" ? "Generate Replies" : "Enhance Text";
-  const loadingText = mode === "reply" ? "Generating..." : "Enhancing...";
+  let placeholder = "Paste the message you received here... (Ctrl/Cmd + Enter to generate)";
+  let buttonText = "Generate Replies";
+  let loadingText = "Generating...";
+  if (mode === "enhance") {
+    placeholder = "Paste your text to enhance here... (Ctrl/Cmd + Enter to enhance)";
+    buttonText = "Enhance Text";
+    loadingText = "Enhancing...";
+  } else if (mode === "translate") {
+    placeholder = "Paste text to translate here... (Ctrl/Cmd + Enter to translate)";
+    buttonText = "Translate Text";
+    loadingText = "Translating...";
+  }
 
   return (
     <div className="p-6">

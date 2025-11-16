@@ -1,16 +1,18 @@
 import { create } from "zustand";
 
 export const useChatStore = create((set, get) => ({
-  input: "",  // Renamed from message to input for generality (text/message)
-  results: [],  // Renamed from suggestions to results
+  input: "",
+  results: [],
   loading: false,
   style: "professional",
-  mode: "reply",  // New: 'reply' or 'enhance'
+  mode: "reply",
+  language: "english",
   error: null,
 
   setInput: (val) => set({ input: val }),
   setStyle: (sty) => set({ style: sty }),
-  setMode: (m) => set({ mode: m, results: [], error: null }),  // Clear results on mode change
+  setMode: (m) => set({ mode: m, results: [], error: null }),
+  setLanguage: (lang) => set({ language: lang }),
   clear: () => set({ input: "", results: [], error: null }),
 
   getResults: async () => {
@@ -22,6 +24,9 @@ export const useChatStore = create((set, get) => ({
       if (state.mode === "enhance") {
         endpoint = "/enhance-text";
         body = { text: state.input, style: state.style };
+      } else if (state.mode === "translate") {
+        endpoint = "/translate-text";
+        body = { text: state.input, style: state.style, language: state.language };
       }
 
       const res = await fetch(import.meta.env.VITE_API_ENDPOINT + endpoint, {
@@ -34,7 +39,7 @@ export const useChatStore = create((set, get) => ({
 
       const data = await res.json();
 
-      set({ results: (state.mode === "reply" ? data?.suggestions : data?.enhancements) || [] });
+      set({ results: (state.mode === "reply" ? data?.suggestions : state.mode === "enhance" ? data?.enhancements : data?.translations) || [] });
     } catch (err) {
       set({ error: err.message, results: [] });
     } finally {
