@@ -41,6 +41,6 @@ function insertTextIntoActiveField(text) {
     sel.removeAllRanges();
     sel.addRange(range);
   } else {
-    console.warn("No active editable element to insert text into.");
+    console.log("No active editable element to insert text into.");
   }
 }

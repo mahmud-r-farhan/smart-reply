@@ -199,8 +199,8 @@ body {
 }
 
 .btn-icon {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   padding: 0;
   border-radius: var(--radius-md);
 }
@@ -256,6 +256,7 @@ body {
 
 .tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-1);
   padding: var(--space-1);
   background: var(--color-secondary);
@@ -263,7 +264,7 @@ body {
 }
 
 .tab {
-  flex: 1;
+  flex: 1 1 33%;
   padding: var(--space-2) var(--space-3);
   font-size: 13px;
   font-weight: 500;
@@ -311,6 +312,7 @@ body {
   color: var(--color-text-primary);
   margin-bottom: var(--space-3);
   white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 .card-actions {

@@ -1,7 +1,8 @@
-// ============================================
 // CONSTANTS & ICONS
-// ============================================
+
 const DEFAULT_BACKEND_URL = 'http://localhost:5006/api';
+const DEFAULT_FROM_LANG = 'auto';
+const DEFAULT_TO_LANG = 'english';
 
 const icons = {
   spinner: `<svg class="icon icon-sm spinner" fill="none" viewBox="0 0 24 24">
@@ -26,18 +27,20 @@ const icons = {
   </svg>`
 };
 
-// ============================================
+
 // STATE MANAGEMENT
-// ============================================
+
 const state = {
   mode: 'reply',
   backendUrl: DEFAULT_BACKEND_URL,
+  defaultFromLang: DEFAULT_FROM_LANG,
+  defaultToLang: DEFAULT_TO_LANG,
   isLoading: false
 };
 
-// ============================================
+
 // UTILITY FUNCTIONS
-// ============================================
+
 const utils = {
   $: (selector) => document.querySelector(selector),
   $$: (selector) => document.querySelectorAll(selector),
@@ -77,9 +80,9 @@ const utils = {
   }
 };
 
-// ============================================
+
 // COMPONENTS
-// ============================================
+
 const components = {
   errorAlert: (message) => `
     <div class="alert alert-error">
@@ -116,16 +119,18 @@ const components = {
   `
 };
 
-// ============================================
-// CHROME API WRAPPERS
-// ============================================
+
+// CHROME/BROWSER API WRAPPERS (CROSS-BROWSER)
+
+const api = (typeof chrome !== 'undefined' ? chrome : browser);
+
 const chromeApi = {
   getSelectedText: async () => {
     try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const [tab] = await api.tabs.query({ active: true, currentWindow: true });
       if (!tab) return '';
       
-      const result = await chrome.tabs.sendMessage(tab.id, { action: 'getSelectedText' });
+      const result = await api.tabs.sendMessage(tab.id, { action: 'getSelectedText' });
       return result?.text || '';
     } catch (error) {
       return '';
@@ -134,10 +139,10 @@ const chromeApi = {
 
   insertText: async (text) => {
     try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const [tab] = await api.tabs.query({ active: true, currentWindow: true });
       if (!tab) throw new Error('No active tab found');
       
-      await chrome.tabs.sendMessage(tab.id, { action: 'insertText', text });
+      await api.tabs.sendMessage(tab.id, { action: 'insertText', text });
       return true;
     } catch (error) {
       throw new Error('Could not insert text. Make sure you click in a text field first.');
@@ -145,39 +150,51 @@ const chromeApi = {
   },
 
   loadSettings: async () => {
-    const cfg = await chrome.storage.sync.get({ backendUrl: DEFAULT_BACKEND_URL });
-    return cfg.backendUrl;
+    const cfg = await api.storage.sync.get({ 
+      backendUrl: DEFAULT_BACKEND_URL,
+      defaultFromLang: DEFAULT_FROM_LANG,
+      defaultToLang: DEFAULT_TO_LANG
+    });
+    return cfg;
   },
 
-  saveSettings: async (backendUrl) => {
-    let url = backendUrl.trim() || DEFAULT_BACKEND_URL;
-    url = url.replace(/\/$/, ''); // Remove trailing slash
+  saveSettings: async (settings) => {
+    let { backendUrl, defaultFromLang, defaultToLang } = settings;
+    backendUrl = backendUrl.trim() || DEFAULT_BACKEND_URL;
+    backendUrl = backendUrl.replace(/\/$/, ''); // Remove trailing slash
     
     // Validate URL
     try {
-      new URL(url);
+      new URL(backendUrl);
     } catch (e) {
       throw new Error('Invalid URL. Please enter a valid URL (e.g., http://localhost:5006/api)');
     }
     
-    await chrome.storage.sync.set({ backendUrl: url });
-    return url;
+    await api.storage.sync.set({ backendUrl, defaultFromLang, defaultToLang });
+    return { backendUrl, defaultFromLang, defaultToLang };
   },
 
   sendMessage: async (action, data) => {
-    return await chrome.runtime.sendMessage({ action, ...data });
+    return await api.runtime.sendMessage({ action, ...data });
   }
 };
 
-// ============================================
+
 // UI HANDLERS
-// ============================================
+
 const ui = {
   setLoading: (loading) => {
     state.isLoading = loading;
     const btn = utils.$('#generateBtn');
-    const modeText = state.mode === 'reply' ? 'Generating...' : 'Enhancing...';
-    const normalText = state.mode === 'reply' ? 'Generate Suggestions' : 'Enhance Text';
+    let modeText = 'Generating...';
+    let normalText = 'Generate Suggestions';
+    if (state.mode === 'enhance') {
+      modeText = 'Enhancing...';
+      normalText = 'Enhance Text';
+    } else if (state.mode === 'translate') {
+      modeText = 'Translating...';
+      normalText = 'Translate Text';
+    }
     
     btn.disabled = loading;
     btn.innerHTML = loading 
@@ -250,22 +267,33 @@ const ui = {
     const inputLabel = utils.$('#inputLabel');
     const inputField = utils.$('#inputText');
     const generateBtn = utils.$('#generateBtn');
+    const langGroup = utils.$('#languageGroup');
+    const styleGroup = utils.$('.form-group:nth-child(2)'); // Style select group
+    
+    langGroup.classList.add('hidden');
+    styleGroup.classList.remove('hidden');
     
     if (state.mode === 'reply') {
       inputLabel.textContent = 'Message to Reply To';
       inputField.placeholder = 'Paste message or highlight text...';
       generateBtn.innerHTML = `${icons.lightning} Generate Suggestions`;
-    } else {
+    } else if (state.mode === 'enhance') {
       inputLabel.textContent = 'Text to Enhance';
       inputField.placeholder = 'Paste your text to enhance...';
       generateBtn.innerHTML = `${icons.lightning} Enhance Text`;
+    } else if (state.mode === 'translate') {
+      inputLabel.textContent = 'Text to Translate';
+      inputField.placeholder = 'Paste text to translate...';
+      generateBtn.innerHTML = `${icons.lightning} Translate Text`;
+      langGroup.classList.remove('hidden');
+      styleGroup.classList.add('hidden'); // Hide style for translate, or keep if needed
     }
   }
 };
 
-// ============================================
+
 // EVENT HANDLERS
-// ============================================
+
 const handlers = {
   switchMode: (mode) => {
     state.mode = mode;
@@ -278,6 +306,7 @@ const handlers = {
   generate: async () => {
     const inputText = utils.$('#inputText').value.trim();
     const style = utils.$('#styleSelect').value;
+    const toLang = utils.$('#toLangSelect').value || state.defaultToLang;
 
     if (!inputText) {
       ui.showError('Please enter some text first');
@@ -291,7 +320,9 @@ const handlers = {
       const response = await chromeApi.sendMessage('getResults', {
         input: inputText,
         style: style,
-        mode: state.mode
+        mode: state.mode,
+        from_lang: state.defaultFromLang, // Not used in backend, but pass if needed
+        to_lang: toLang
       });
 
       if (response?.results && response.results.length > 0) {
@@ -310,6 +341,8 @@ const handlers = {
 
   openSettings: () => {
     utils.$('#backendUrlInput').value = state.backendUrl;
+    utils.$('#defaultFromLang').value = state.defaultFromLang;
+    utils.$('#defaultToLang').value = state.defaultToLang;
     utils.showView('settingsView');
   },
 
@@ -318,11 +351,13 @@ const handlers = {
   },
 
   saveSettings: async () => {
-    const url = utils.$('#backendUrlInput').value;
+    const backendUrl = utils.$('#backendUrlInput').value;
+    const defaultFromLang = utils.$('#defaultFromLang').value;
+    const defaultToLang = utils.$('#defaultToLang').value;
     
     try {
-      const savedUrl = await chromeApi.saveSettings(url);
-      state.backendUrl = savedUrl;
+      const saved = await chromeApi.saveSettings({ backendUrl, defaultFromLang, defaultToLang });
+      Object.assign(state, saved);
       handlers.closeSettings();
     } catch (error) {
       alert(error.message);
@@ -330,28 +365,48 @@ const handlers = {
   },
 
   loadSettings: async () => {
-    const url = await chromeApi.loadSettings();
-    state.backendUrl = url;
-    utils.$('#backendUrlInput').value = url;
+    const settings = await chromeApi.loadSettings();
+    Object.assign(state, settings);
+    utils.$('#backendUrlInput').value = state.backendUrl;
+    utils.$('#defaultFromLang').value = state.defaultFromLang;
+    utils.$('#defaultToLang').value = state.defaultToLang;
   }
 };
 
-// ============================================
+
 // INITIALIZATION
-// ============================================
+
 const init = async () => {
   // Load settings
   await handlers.loadSettings();
 
-  // Try to get selected text from page
-  const selectedText = await chromeApi.getSelectedText();
-  if (selectedText) {
-    utils.$('#inputText').value = selectedText;
+  // Check for pending action (e.g., from context menu or shortcut)
+  const pending = await api.storage.local.get('pendingAction');
+  let handledPending = false;
+  if (pending.pendingAction) {
+    const { mode, input } = pending.pendingAction;
+    if (mode === 'translate' && input) {
+      utils.$('#inputText').value = input;
+      handlers.switchMode('translate');
+      utils.$('#toLangSelect').value = state.defaultToLang;
+      await handlers.generate();
+      handledPending = true;
+    }
+    await api.storage.local.remove('pendingAction');
+  }
+
+  // If no pending, try to get selected text from page
+  if (!handledPending) {
+    const selectedText = await chromeApi.getSelectedText();
+    if (selectedText) {
+      utils.$('#inputText').value = selectedText;
+    }
   }
 
   // Mode switching
   utils.$('#modeReply').addEventListener('click', () => handlers.switchMode('reply'));
   utils.$('#modeEnhance').addEventListener('click', () => handlers.switchMode('enhance'));
+  utils.$('#modeTranslate').addEventListener('click', () => handlers.switchMode('translate'));
 
   // Generate button
   utils.$('#generateBtn').addEventListener('click', handlers.generate);
@@ -361,7 +416,7 @@ const init = async () => {
   utils.$('#backBtn').addEventListener('click', handlers.closeSettings);
   utils.$('#saveBtn').addEventListener('click', handlers.saveSettings);
 
-  // Keyboard shortcuts
+  // Keyboard shortcuts in popup
   utils.$('#inputText').addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       handlers.generate();
@@ -369,10 +424,14 @@ const init = async () => {
   });
 
   // Set initial mode
-  handlers.switchMode('reply');
+  if (!handledPending) {
+    handlers.switchMode('reply');
+  }
   
-  // Show empty state
-  ui.showResults([]);
+  // Show empty state if no results
+  if (!handledPending) {
+    ui.showResults([]);
+  }
 };
 
 // Start the app
