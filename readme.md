@@ -1,6 +1,6 @@
-# Smart Reply & Enhance
+# Smart Reply, Enhance & Translate
 
-> **AI-powered Smart Reply & Enhance Assistant:** Instantly generate smart, context-aware replies or enhance your own text for your workflow: messages, emails, chats, and more directly from your browser or web app!
+> **AI-powered Smart Reply, Enhance & Translate Assistant:** Instantly generate smart, context-aware replies, enhance your own text, or translate content for your workflow: messages, emails, chats, and more directly from your browser or web app!
 
 ![Smart Reply Logo](./extension/images/icon-16.png)![Smart Reply Logo](./extension/images/icon-48.png)
 
@@ -8,9 +8,9 @@
 
 ## 🚀 Overview
 
-**Smart Reply & Enhance** is a comprehensive AI tool suite consisting of a Chrome extension, a React-based web application, and a shared backend service. It uses LLMs (via [OpenRouter](https://openrouter.ai)) to suggest replies intelligently based on the context of your communication or to improve and refine your own text.
+**Smart Reply, Enhance & Translate** is a comprehensive AI tool suite consisting of a browser extension (Chrome/Firefox), a React-based web application, and a shared backend service. It uses LLMs (via [OpenRouter](https://openrouter.ai)) to suggest replies intelligently based on the context of your communication, improve and refine your own text, or translate text with customizable styles.
 
-It helps boost productivity for anyone who writes repetitive messages or needs quick text improvements as freelancers, support agents, or busy professionals. The Chrome extension provides on-the-go access directly in your browser, while the web app offers a full-featured interface for deeper interactions.
+It helps boost productivity for anyone who writes repetitive messages, needs quick text improvements, or requires translations as freelancers, support agents, or busy professionals. The browser extension provides on-the-go access directly in your browser, while the web app offers a full-featured interface for deeper interactions.
 
 ---
 
@@ -18,19 +18,20 @@ It helps boost productivity for anyone who writes repetitive messages or needs q
 
 - 💬 **Four AI Reply Suggestions per Message** – Get up to 4 context-aware replies instantly for any message in Smart Reply mode (available in both extension and web).  
 - ✍️ **Four AI Text Enhancements** – Improve your own text with 4 variations focusing on grammar, clarity, conciseness, structure, and effectiveness in Smart Enhance mode (like Grammarly; available in both extension and web).  
-- 🎨 **Customizable Style** – Choose from Professional, Friendly, Humorous, or Concise styles with tooltips for descriptions.  
-- 🔄 **Mode Switching** – Easily toggle between Smart Reply and Smart Enhance in the extension popup or web interface.  
+- 🌐 **Four AI Text Translations** – Translate text to multiple languages (e.g., English, Spanish, French, German, Chinese, Arabic, Bengali) with 4 variations in customizable styles in Smart Translate mode (available in both extension and web).  
+- 🎨 **Customizable Style** – Choose from Professional, Friendly, Humorous, or Concise styles with tooltips for descriptions (applies to Reply, Enhance, and Translate modes).  
+- 🔄 **Mode Switching** – Easily toggle between Smart Reply, Smart Enhance, and Smart Translate in the extension popup or web interface.  
 - ⚙️ **LLM Agnostic** – Works with any OpenRouter-supported model (free or paid).  
 - 🔐 **Custom API Keys** – Bring your own API key for privacy & flexibility.  
 - 🐳 **Docker Support** – Run the backend instantly using Docker.  
-- **Extension-Specific**: Insert suggestions directly into text fields (e.g., emails, chats); auto-detect selected text.  
-- **Web-Specific**: Auto-resizing textarea, animated UI with Framer Motion, developer info panel, keyboard shortcuts (Ctrl/Cmd + Enter), and accessibility features.
+- **Extension-Specific**: Insert suggestions/translations directly into text fields (e.g., emails, chats); auto-detect selected text; keyboard shortcut (Ctrl+Shift+T) and context menu for quick in-page translation using default languages; cross-browser support for Chrome and Firefox.  
+- **Web-Specific**: Auto-resizing textarea, animated UI with Framer Motion, developer info panel, keyboard shortcuts (Ctrl/Cmd + Enter), responsive design, and accessibility features.
 
 ---
 
 ## 🧩 Tech Stack
 
-- **Frontend (Extension):** Chrome Manifest V3, JavaScript, HTML, CSS  
+- **Frontend (Extension):** Browser Manifest V3, JavaScript, HTML, CSS  
 - **Frontend (Web):** React, Zustand for state management, Framer Motion for animations, Lucide React for icons, Tailwind CSS for styling  
 - **Backend:** Node.js + Express  
 - **AI Integration:** OpenRouter API  
@@ -86,8 +87,9 @@ cd smart-reply
 
 ---
 
-### 3 Install the Chrome Extension
+### 3 Install the Browser Extension
 
+#### For Chrome:
 1. Open Chrome and go to:
 
    ```
@@ -100,6 +102,19 @@ cd smart-reply
    smart-reply/extension
    ```
 4. The extension will appear in your toolbar.
+
+#### For Firefox (not compatible):
+1. Open Firefox and go to:
+
+   ```
+   about:debugging#/runtime/this-firefox
+   ```
+2. Click **Load Temporary Add-on...** and select the `manifest.json` file in:
+
+   ```
+   smart-reply/extension
+   ```
+3. The extension will be loaded temporarily (reload on browser restart).
 
 ---
 
@@ -122,10 +137,10 @@ cd smart-reply
 
 ### 5 Connect Backend
 
-- **For Extension**: Click on the extension icon → **Settings**. Paste your backend base URL (e.g., `http://localhost:5006/api`). Save.
+- **For Extension**: Click on the extension icon → **Settings**. Paste your backend base URL (e.g., `http://localhost:5006/api`). Set default source/target languages for quick translations. Save.
 - **For Web**: The `.env` handles the connection automatically.
 
-> Note: The tools automatically append `/suggest-reply` or `/enhance-text` based on the selected mode.
+> Note: The tools automatically append `/suggest-reply`, `/enhance-text`, or `/translate-text` based on the selected mode.
 
 ---
 
@@ -175,6 +190,29 @@ cd smart-reply
   }
   ```
 
+* **POST /api/translate-text** – Generate multiple translated versions of text (Smart Translate mode)
+
+  ```json
+  {
+    "text": "Hello, how are you?",
+    "style": "friendly",
+    "language": "bengali"
+  }
+  ```
+
+  Response:
+
+  ```json
+  {
+    "translations": [
+      "হ্যালো, আপনি কেমন আছেন?",
+      "হাই, তুমি কেমন আছো?",
+      "হেলো, তোমার খবর কী?",
+      "হ্যালো, আপনার অবস্থা কেমন?"
+    ]
+  }
+  ```
+
 * **GET /health** – Health check endpoint returning `{ "status": "ok" }`.
 
 
@@ -183,7 +221,7 @@ cd smart-reply
 ## ☁️ Deploy Backend on the Cloud
 
 You can deploy using **Render**, **VPS**, **Fly.io**, or **Railway.app**.
-Set `OPENROUTER_API_KEY` in environment variables, then share the endpoint with your Chrome extension or web app.
+Set `OPENROUTER_API_KEY` in environment variables, then share the endpoint with your browser extension or web app.
 
 ---
 
