@@ -122,7 +122,7 @@ const components = {
 
 // CHROME/BROWSER API WRAPPERS (CROSS-BROWSER)
 
-const api = (typeof browser !== 'undefined' ? browser : chrome);
+const api = (typeof chrome !== 'undefined' ? chrome : browser);
 
 const chromeApi = {
   getSelectedText: async () => {
@@ -130,8 +130,14 @@ const chromeApi = {
       const [tab] = await api.tabs.query({ active: true, currentWindow: true });
       if (!tab) return '';
       
-      const result = await api.tabs.sendMessage(tab.id, { action: 'getSelectedText' });
-      return result?.text || '';
+      try {
+        const result = await api.tabs.sendMessage(tab.id, { action: 'getSelectedText' });
+        return result?.text || '';
+      } catch (error) {
+        // Content script not loaded or not responding - return empty
+        console.log('Content script not available on this page');
+        return '';
+      }
     } catch (error) {
       return '';
     }
@@ -142,10 +148,14 @@ const chromeApi = {
       const [tab] = await api.tabs.query({ active: true, currentWindow: true });
       if (!tab) throw new Error('No active tab found');
       
-      await api.tabs.sendMessage(tab.id, { action: 'insertText', text });
-      return true;
+      try {
+        await api.tabs.sendMessage(tab.id, { action: 'insertText', text });
+        return true;
+      } catch (error) {
+        throw new Error('Could not insert text. Make sure you click in a text field first on a supported page.');
+      }
     } catch (error) {
-      throw new Error('Could not insert text. Make sure you click in a text field first.');
+      throw new Error(error.message || 'Could not insert text. Make sure you click in a text field first.');
     }
   },
 
@@ -161,8 +171,9 @@ const chromeApi = {
   saveSettings: async (settings) => {
     let { backendUrl, defaultFromLang, defaultToLang } = settings;
     backendUrl = backendUrl.trim() || DEFAULT_BACKEND_URL;
-    backendUrl = backendUrl.replace(/\/$/, '');
+    backendUrl = backendUrl.replace(/\/$/, ''); // Remove trailing slash
     
+    // Validate URL
     try {
       new URL(backendUrl);
     } catch (e) {
@@ -174,7 +185,32 @@ const chromeApi = {
   },
 
   sendMessage: async (action, data) => {
-    return await api.runtime.sendMessage({ action, ...data });
+    const maxRetries = 5;
+    let lastError;
+    
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        return await api.runtime.sendMessage({ action, ...data });
+      } catch (error) {
+        lastError = error;
+        
+        // If it's a context invalidated error, don't retry
+        if (error.message.includes('Extension context invalidated')) {
+          throw new Error('Extension was updated. Please refresh the page.');
+        }
+        
+        // If it's the first attempt and connection doesn't exist, wait before retry
+        if (attempt < maxRetries - 1 && error.message.includes('Receiving end does not exist')) {
+          const delay = 150 * Math.pow(2, attempt);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        } else if (attempt === maxRetries - 1) {
+          break;
+        }
+      }
+    }
+    
+    console.error('Failed to communicate with background after retries:', lastError);
+    throw lastError || new Error('Failed to communicate with background service. Please try again.');
   }
 };
 
@@ -380,25 +416,33 @@ const init = async () => {
   await handlers.loadSettings();
 
   // Check for pending action (e.g., from context menu or shortcut)
-  const pending = await api.storage.local.get('pendingAction');
   let handledPending = false;
-  if (pending.pendingAction) {
-    const { mode, input } = pending.pendingAction;
-    if (mode === 'translate' && input) {
-      utils.$('#inputText').value = input;
-      handlers.switchMode('translate');
-      utils.$('#toLangSelect').value = state.defaultToLang;
-      await handlers.generate();
-      handledPending = true;
+  try {
+    const pending = await api.storage.local.get('pendingAction');
+    if (pending.pendingAction) {
+      const { mode, input } = pending.pendingAction;
+      if (mode === 'translate' && input) {
+        utils.$('#inputText').value = input;
+        handlers.switchMode('translate');
+        utils.$('#toLangSelect').value = state.defaultToLang;
+        await handlers.generate();
+        handledPending = true;
+      }
+      await api.storage.local.remove('pendingAction');
     }
-    await api.storage.local.remove('pendingAction');
+  } catch (error) {
+    console.error('Error checking pending action:', error);
   }
 
   // If no pending, try to get selected text from page
   if (!handledPending) {
-    const selectedText = await chromeApi.getSelectedText();
-    if (selectedText) {
-      utils.$('#inputText').value = selectedText;
+    try {
+      const selectedText = await chromeApi.getSelectedText();
+      if (selectedText) {
+        utils.$('#inputText').value = selectedText;
+      }
+    } catch (error) {
+      console.log('Could not get selected text:', error);
     }
   }
 
@@ -434,4 +478,8 @@ const init = async () => {
 };
 
 // Start the app
-init();
+init().catch(error => {
+  console.error('Initialization error:', error);
+  handlers.switchMode('reply');
+  ui.showResults([]);
+});
