@@ -1,11 +1,11 @@
-// New Model (Grok 4.1)
-const MODEL = "x-ai/grok-4.1-fast:free";
-// Old models (commented out):
-// const SUGGESTIONS_ENHANCEMENTS_MODEL = "meta-llama/llama-3.1-8b-instruct";
-// const TRANSLATIONS_MODEL = "qwen/qwen-2.5-7b-instruct";
+// Models
+const SUGGESTIONS_MODEL = "tngtech/deepseek-r1t2-chimera:free";
+const ENHANCEMENTS_MODEL = "google/gemma-3-27b-it:free";
+const TRANSLATIONS_MODEL = "meta-llama/llama-3.3-70b-instruct:free";
 
-// Reusable function to call OpenRouter API and parse the response
-const callOpenRouter = async (prompt, model = MODEL) => {
+
+// Reusable API caller
+const callOpenRouter = async (prompt, model = SUGGESTIONS_MODEL) => {
   if (!process.env.OPENROUTER_API_KEY) {
     throw new Error("API key not configured");
   }
@@ -44,18 +44,22 @@ const callOpenRouter = async (prompt, model = MODEL) => {
     }
 
     const data = await response.json();
-    const content = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || "";
+    const content = (data.choices?.[0]?.message?.content || "").trim();
 
     let result = [];
+
+    // Try direct JSON parse
     try {
       result = JSON.parse(content);
       if (!Array.isArray(result)) throw new Error("Not an array");
     } catch (e) {
+      // Try extracting JSON substring
       try {
         const match = content.match(/\[[\s\S]*\]/);
         if (match) {
           result = JSON.parse(match[0]);
         } else {
+          // Fallback: list parsing
           result = content
             .split("\n")
             .map((l) => l.replace(/^\s*[-\d\.\)]\s*/, "").trim())
@@ -78,32 +82,43 @@ const callOpenRouter = async (prompt, model = MODEL) => {
   }
 };
 
+
+// Suggestions Generator
 export const generateSuggestions = async (message, style) => {
-  const prompt = `Generate 4 smart reply suggestions for the following message in a ${style} tone. Return ONLY a JSON array of strings with no preamble.
+  const prompt = `Generate exactly 4 smart reply suggestions for this message in a ${style} tone.
+Return ONLY a JSON array of strings.
 
 Message: "${message}"
 
-Return format: ["reply1", "reply2", "reply3", "reply4"]`;
+Format: ["reply1", "reply2", "reply3", "reply4"]`;
 
-  return callOpenRouter(prompt);
+  return callOpenRouter(prompt, SUGGESTIONS_MODEL);
 };
 
+
+// Enhancements Generator
 export const generateEnhancements = async (text, style) => {
-  const prompt = `You are a professional text editor. Rewrite the following text in a ${style} tone, improving grammar, clarity, conciseness, and structure. Generate exactly 4 distinct variations. Return ONLY a JSON array of strings with no preamble or explanation.
+  const prompt = `Rewrite the following text in a ${style} tone.
+Improve clarity, grammar, structure, and conciseness.
+Return exactly 4 variations as a JSON array of strings.
 
 Text: "${text}"
 
-Return format: ["enhanced1", "enhanced2", "enhanced3", "enhanced4"]`;
+Format: ["v1", "v2", "v3", "v4"]`;
 
-  return callOpenRouter(prompt);
+  return callOpenRouter(prompt, ENHANCEMENTS_MODEL);
 };
 
+
+// Translations Generator
 export const generateTranslations = async (text, style, language) => {
-  const prompt = `Translate the following text to ${language} in a ${style} tone. Generate exactly 4 distinct variations. Return ONLY a JSON array of strings with no preamble or explanation.
+  const prompt = `Translate the following text to ${language} in a ${style} tone.
+Return exactly 4 different variations.
+Output ONLY a JSON array of strings.
 
 Text: "${text}"
 
-Return format: ["translation1", "translation2", "translation3", "translation4"]`;
+Format: ["t1", "t2", "t3", "t4"]`;
 
-  return callOpenRouter(prompt);
+  return callOpenRouter(prompt, TRANSLATIONS_MODEL);
 };
