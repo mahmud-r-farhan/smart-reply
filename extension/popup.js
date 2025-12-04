@@ -122,7 +122,7 @@ const components = {
 
 // CHROME/BROWSER API WRAPPERS (CROSS-BROWSER)
 
-const api = (typeof chrome !== 'undefined' ? chrome : browser);
+const api = (typeof browser !== 'undefined' ? browser : chrome);
 
 const chromeApi = {
   getSelectedText: async () => {
@@ -161,9 +161,8 @@ const chromeApi = {
   saveSettings: async (settings) => {
     let { backendUrl, defaultFromLang, defaultToLang } = settings;
     backendUrl = backendUrl.trim() || DEFAULT_BACKEND_URL;
-    backendUrl = backendUrl.replace(/\/$/, ''); // Remove trailing slash
+    backendUrl = backendUrl.replace(/\/$/, '');
     
-    // Validate URL
     try {
       new URL(backendUrl);
     } catch (e) {

@@ -1,46 +1,43 @@
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "getSelectedText") {
-    try {
-      const text = window.getSelection().toString();
-      sendResponse({ text });
-    } catch (e) {
-      sendResponse({ text: "" });
+const api = typeof browser !== 'undefined' ? browser : chrome;
+
+api.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  try {
+    if (request.action === "getSelectedText") {
+      sendResponse({ text: window.getSelection()?.toString().trim() || "" });
+    } else if (request.action === "insertText") {
+      const success = insertIntoActiveElement(request.text);
+      sendResponse({ success });
     }
-  } else if (request.action === "insertText") {
-    try {
-      insertTextIntoActiveField(request.text);
-    } catch (e) {
-      console.error("Insert failed", e);
-    }
+  } catch (err) {
+    sendResponse({ error: err.message });
   }
+  return true;
 });
 
-function insertTextIntoActiveField(text) {
-  const activeElement = document.activeElement;
+function insertIntoActiveElement(text) {
+  const el = document.activeElement;
+  if (!el) return false;
 
-  if (activeElement && (activeElement.tagName === "TEXTAREA" || activeElement.tagName === "INPUT")) {
-    const start = activeElement.selectionStart ?? activeElement.value.length;
-    const end = activeElement.selectionEnd ?? start;
-    const currentValue = activeElement.value;
+  try {
+    if (el.isContentEditable) {
+      document.execCommand("insertText", false, text);
+      return true;
+    }
 
-    activeElement.value = currentValue.substring(0, start) + text + currentValue.substring(end);
-    const newPos = start + text.length;
-    activeElement.selectionStart = activeElement.selectionEnd = newPos;
-
-    activeElement.dispatchEvent(new Event("input", { bubbles: true }));
-    activeElement.dispatchEvent(new Event("change", { bubbles: true }));
-  } else if (activeElement && activeElement.isContentEditable) {
-    const sel = window.getSelection();
-    if (!sel) return;
-    const range = sel.getRangeAt(0);
-    range.deleteContents();
-    const textNode = document.createTextNode(text);
-    range.insertNode(textNode);
-    range.setStartAfter(textNode);
-    range.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(range);
-  } else {
-    console.log("No active editable element to insert text into.");
+    if (el.tagName === "TEXTAREA" || el.tagName === "INPUT") {
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      const value = el.value;
+      el.value = value.slice(0, start) + text + value.slice(end);
+      el.selectionStart = el.selectionEnd = start + text.length;
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+      return true;
+    }
+  } catch (err) {
+    console.error("Insert error:", err);
+    return false;
   }
+
+  return false;
 }

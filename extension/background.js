@@ -1,104 +1,117 @@
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+const api = typeof browser !== 'undefined' ? browser : chrome;
+
+// Message listener
+api.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "getResults") {
-    fetchResults(request.input, request.style, request.mode, request.from_lang, request.to_lang)
-      .then((results) => {
-        sendResponse({ results });
-      })
-      .catch((err) => {
-        sendResponse({ error: err.message || "Failed to fetch results" });
-      });
+    fetchResults(request.input, request.style, request.mode, request.to_lang)
+      .then(results => sendResponse({ results }))
+      .catch(err => sendResponse({ error: err.message || "Request failed" }));
     return true;
   }
 });
 
-async function fetchResults(input, style, mode, from_lang, to_lang) {
-  const cfg = await new Promise((res) => {
-    chrome.storage.sync.get({ backendUrl: "http://localhost:5006/api" }, res);
-  });
-  const baseUrl = cfg?.backendUrl || "http://localhost:5006/api";
-
-  let endpoint = "/suggest-reply";
-  let body = { message: input, style };
-  if (mode === "enhance") {
-    endpoint = "/enhance-text";
-    body = { text: input, style };
-  } else if (mode === "translate") {
-    endpoint = "/translate-text";
-    body = { text: input, style, language: to_lang };
-  }
-
-  const url = `${baseUrl}${endpoint}`;
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
-
+async function fetchResults(input, style, mode, to_lang) {
   try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      signal: controller.signal,
-      body: JSON.stringify(body),
-    });
+    const storage = await api.storage.sync.get("backendUrl");
+    const backendUrl = storage.backendUrl || "http://localhost:5006/api";
+    const baseUrl = backendUrl.replace(/\/$/, "");
 
-    clearTimeout(timeout);
+    const endpoints = {
+      reply: "/suggest-reply",
+      enhance: "/enhance-text",
+      translate: "/translate-text"
+    };
 
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`Backend error: ${response.status} ${response.statusText} - ${text}`);
+    const body = mode === "translate"
+      ? { text: input, language: to_lang }
+      : { [mode === "enhance" ? "text" : "message"]: input, style };
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
+
+    try {
+      const response = await fetch(`${baseUrl}${endpoints[mode]}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeout);
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Server error: ${response.status} - ${text.substring(0, 100)}`);
+      }
+
+      const data = await response.json();
+      return mode === "reply" ? data.suggestions
+           : mode === "enhance" ? data.enhancements
+           : data.translations || [];
+    } catch (err) {
+      clearTimeout(timeout);
+      if (err.name === "AbortError") throw new Error("Request timed out");
+      throw err;
     }
-
-    const data = await response.json();
-    return (mode === "reply" ? data.suggestions : mode === "enhance" ? data.enhancements : data.translations) || [];
-  } catch (error) {
-    if (error.name === "AbortError") {
-      throw new Error("Request timed out. Try again.");
-    }
-    throw error;
+  } catch (err) {
+    throw new Error(err.message || "Failed to fetch results");
   }
 }
 
-// Add context menu
-chrome.contextMenus.create({
-  id: 'translate-selected',
-  title: 'Translate Selected Text',
-  contexts: ['selection']
-});
+// Context Menu initialization
+function initContextMenu() {
+  try {
+    api.contextMenus.create({
+      id: "instant-translate",
+      title: "Translate with Instant Write",
+      contexts: ["selection"]
+    });
 
-// Handle context menu click
-chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-  if (info.menuItemId === 'translate-selected') {
-    const result = await chrome.tabs.sendMessage(tab.id, { action: 'getSelectedText' });
-    const selectedText = result?.text || '';
-    if (selectedText) {
-      await chrome.storage.local.set({
-        pendingAction: {
-          mode: 'translate',
-          input: selectedText
-        }
-      });
-      await chrome.action.openPopup();
-    }
-  }
-});
-
-// Handle commands
-chrome.commands.onCommand.addListener(async (command) => {
-  if (command === 'translate-selected') {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tab) {
-      const result = await chrome.tabs.sendMessage(tab.id, { action: 'getSelectedText' });
-      const selectedText = result?.text || '';
-      if (selectedText) {
-        await chrome.storage.local.set({
-          pendingAction: {
-            mode: 'translate',
-            input: selectedText
-          }
+    api.contextMenus.onClicked.addListener(async (info, tab) => {
+      if (info.menuItemId === "instant-translate" && info.selectionText) {
+        await api.storage.local.set({
+          pendingAction: { mode: "translate", input: info.selectionText }
         });
-        await chrome.action.openPopup();
+        try {
+          await api.action.openPopup();
+        } catch (e) {
+          console.log("openPopup not available in this context");
+        }
       }
-    }
+    });
+  } catch (e) {
+    console.error("Context menu error:", e);
   }
-});
+}
+
+// Commands initialization
+function initCommands() {
+  if (api.commands) {
+    api.commands.onCommand.addListener(async (command) => {
+      if (command === "translate-selected") {
+        try {
+          const [tab] = await api.tabs.query({ active: true, currentWindow: true });
+          if (!tab) return;
+          
+          const result = await api.tabs.sendMessage(tab.id, { action: "getSelectedText" });
+          if (result?.text) {
+            await api.storage.local.set({
+              pendingAction: { mode: "translate", input: result.text }
+            });
+            try {
+              await api.action.openPopup();
+            } catch (e) {
+              console.log("openPopup not available in this context");
+            }
+          }
+        } catch (err) {
+          console.error("Command error:", err);
+        }
+      }
+    });
+  }
+}
+
+// Initialize on load
+initContextMenu();
+initCommands();

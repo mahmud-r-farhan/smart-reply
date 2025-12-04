@@ -1,25 +1,19 @@
 {
   "manifest_version": 3,
-  "name": "Smart Reply Assistant",
-  "version": "0.0.3",
-  "description": "AI-powered smart reply, enhancement, and translation for emails and messages",
-  "permissions": [
-    "activeTab",
-    "scripting",
-    "storage",
-    "contextMenus",
-    "commands"
-  ],
-  "host_permissions": [
-    "<all_urls>",
-    "http://localhost:5006/"
-  ],
-  "background": {
-    "service_worker": "background.js"
+  "name": "Instant Write & Translate",
+  "version": "0.0.4",
+  "description": "AI-powered smart replies, text enhancement, and translation assistant",
+  "icons": {
+    "16": "images/icon-16.png",
+    "48": "images/icon-48.png",
+    "128": "images/icon-128.png"
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Smart Reply Assistant"
+    "default_title": "Instant Write & Translate"
+  },
+  "background": {
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
@@ -28,11 +22,17 @@
       "run_at": "document_end"
     }
   ],
-  "icons": {
-    "16": "images/icon-16.png",
-    "48": "images/icon-48.png",
-    "128": "images/icon-128.png"
-  },
+  "permissions": [
+    "activeTab",
+    "storage",
+    "contextMenus",
+    "scripting",
+    "commands"
+  ],
+  "host_permissions": [
+    "<all_urls>",
+    "http://localhost:5006/*"
+  ],
   "commands": {
     "translate-selected": {
       "suggested_key": {
