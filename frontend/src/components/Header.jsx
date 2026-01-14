@@ -1,9 +1,8 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { motion } from "framer-motion";
 import SidePanel from "./SidePanel";
-import { Brain } from "lucide-react";
 
-const Header = () => {
+const Header = memo(() => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -18,11 +17,27 @@ const Header = () => {
         <div className="inline-flex items-center gap-3 mb-4">
           <motion.button
             onClick={() => setIsOpen(true)}
-            className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg shadow-indigo-500/50 cursor-help hover:shadow-indigo-500/70"
-            whileHover={{ rotate: 360 }}
-            transition={{ duration: 0.5 }}
+            whileHover={{ rotate: 360, scale: 1.05 }}
+            transition={{ duration: 0.6, ease: "easeInOut" }}
+            className="
+              p-2 rounded-2xl cursor-help
+              bg-white/10
+              backdrop-blur-xl
+              border border-white/20
+              shadow-lg shadow-indigo-500/20
+              hover:shadow-indigo-500/40
+              relative overflow-hidden
+            "
           >
-            <Brain className="w-8 h-8 text-white" />
+            {/* Glass shine */}
+            <span className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/5 to-transparent opacity-50 pointer-events-none" />
+
+            <img
+              src="https://i.postimg.cc/HkhmHFxy/icons8-chatbot-48.png"
+              alt="Logo"
+              title="Developer?"
+              className="relative z-10"
+            />
           </motion.button>
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
             Smart Reply Web
@@ -45,6 +60,7 @@ const Header = () => {
       <SidePanel isOpen={isOpen} onClose={() => setIsOpen(false)} />
     </>
   );
-};
+});
 
+Header.displayName = 'Header';
 export default Header;

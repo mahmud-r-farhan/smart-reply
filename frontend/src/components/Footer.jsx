@@ -1,6 +1,10 @@
-import  { motion } from 'framer-motion';
+import { memo } from 'react';
+import { motion } from 'framer-motion';
 
-const Footer = () => {
+const Footer = memo(() => {
+
+  const year = new Date().getFullYear();
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -9,10 +13,11 @@ const Footer = () => {
       className="mt-8 text-center"
     >
       <p className="text-slate-500 text-sm">
-       Privacy first: Your data stays secure | <a href="https://ravlo.vercel.app" target="_blank" className="underline decoration-wavy decoration-indigo-500">Ravlo's First Open-Source Edition</a>
+        Privacy first: Your data stays secure with us.   © {year}
       </p>
     </motion.div>
   );
-};
+});
 
+Footer.displayName = 'Footer';
 export default Footer;

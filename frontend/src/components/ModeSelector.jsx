@@ -1,13 +1,16 @@
-import React from "react";
+import React, { memo, useMemo } from "react";
 import { motion } from "framer-motion";
 import { MessageSquare, Edit, Languages } from "lucide-react";
 
-const ModeSelector = ({ mode, setMode }) => {
-  const modes = [
-    { value: "reply", label: "Smart Reply", icon: MessageSquare, description: "Generate replies to received messages" },
-    { value: "enhance", label: "Smart Enhance", icon: Edit, description: "Improve your own text like Grammarly" },
-    { value: "translate", label: "Smart Translate", icon: Languages, description: "Translate text with style" },
-  ];
+const ModeSelector = memo(({ mode, setMode }) => {
+  const modes = useMemo(
+    () => [
+      { value: "reply", label: "Smart Reply", icon: MessageSquare, description: "Generate replies to received messages" },
+      { value: "enhance", label: "Smart Enhance", icon: Edit, description: "Improve your own text like Grammarly" },
+      { value: "translate", label: "Smart Translate", icon: Languages, description: "Translate text with style" },
+    ],
+    []
+  );
 
   return (
     <div className="p-6 border-b border-slate-800 bg-slate-900/50">
@@ -31,6 +34,7 @@ const ModeSelector = ({ mode, setMode }) => {
       </div>
     </div>
   );
-};
+});
 
+ModeSelector.displayName = 'ModeSelector';
 export default ModeSelector;

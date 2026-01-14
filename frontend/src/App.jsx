@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useChatStore } from "./store/useChatStore";
 import Header from "./components/Header.jsx";
 import ModeSelector from "./components/ModeSelector.jsx";
@@ -15,25 +15,25 @@ export default function App() {
   const [copiedIndex, setCopiedIndex] = useState(null);
   const [showStyleInfo, setShowStyleInfo] = useState(false);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!input.trim()) return;
     await getResults();
-  };
+  }, [input, getResults]);
 
-  const handleRegenerate = async () => {
+  const handleRegenerate = useCallback(async () => {
     await getResults();
-  };
+  }, [getResults]);
 
-  const handleCopy = (text, index) => {
+  const handleCopy = useCallback((text, index) => {
     navigator.clipboard.writeText(text).then(() => {
       setCopiedIndex(index);
       setTimeout(() => setCopiedIndex(null), 2000);
     });
-  };
+  }, []);
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-4 md:p-8">
-      {/* Animated background effect */}
+  // Memoize background animation to prevent re-renders
+  const backgroundAnimation = useMemo(
+    () => (
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <motion.div 
           className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl"
@@ -46,6 +46,18 @@ export default function App() {
           transition={{ duration: 5, repeat: Infinity, repeatType: "reverse", delay: 2.5 }}
         />
       </div>
+    ),
+    []
+  );
+
+  const shouldShowLanguageSelector = useMemo(
+    () => mode === "translate",
+    [mode]
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-4 md:p-8">
+      {backgroundAnimation}
 
       <div className="relative max-w-5xl mx-auto">
         <Header />
@@ -65,7 +77,7 @@ export default function App() {
             setShowStyleInfo={setShowStyleInfo} 
           />
 
-          {mode === "translate" && (
+          {shouldShowLanguageSelector && (
             <LanguageSelector 
               language={language} 
               setLanguage={setLanguage} 
