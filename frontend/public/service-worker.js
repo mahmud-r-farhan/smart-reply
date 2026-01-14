@@ -2,6 +2,7 @@ const CACHE_NAME = 'smart-reply-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
+  '/offline.html',
 ];
 
 // Install event - cache assets
@@ -64,7 +65,10 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() => {
-          // Return offline page or cached response if available
+          // Return offline page for navigation requests, cached response otherwise
+          if (event.request.mode === 'navigate') {
+            return caches.match('/offline.html');
+          }
           return caches.match('/');
         });
     })
