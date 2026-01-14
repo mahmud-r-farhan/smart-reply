@@ -9,6 +9,7 @@ import InputSection from "./components/InputSection.jsx";
 import ResultsSection from "./components/ResultsSection.jsx";
 import EmptyState from "./components/EmptyState.jsx";
 import Footer from "./components/Footer.jsx";
+import PWAInstallPrompt from "./components/PWAInstallPrompt.jsx";
 
 export default function App() {
   const { input, results, loading, style, mode, language, error, setInput, setStyle, setMode, setLanguage, getResults, clear } = useChatStore();
@@ -58,6 +59,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-4 md:p-8">
       {backgroundAnimation}
+      <PWAInstallPrompt />
 
       <div className="relative max-w-5xl mx-auto">
         <Header />

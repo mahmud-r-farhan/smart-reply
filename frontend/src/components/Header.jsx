@@ -44,15 +44,18 @@ const Header = memo(() => {
           </h1>
         </div>
         <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-          Generate smart replies, enhancements, or translations for your messages. Also available as a{" "}
-          <a
-            href="https://github.com/mahmud-r-farhan/smart-reply"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline decoration-[#EA6FD1] decoration-wavy hover:decoration-transparent hover:text-[#EA6FD1]"
-          >
-            Chrome Extension!
-          </a>
+          Generate smart replies, enhancements, or translations for your messages. 
+          <span className="hidden md:inline">
+                Also available as a{" "}
+                <a
+                  href="https://github.com/mahmud-r-farhan/smart-reply"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline decoration-[#EA6FD1] decoration-wavy hover:decoration-transparent hover:text-[#EA6FD1]"
+                >
+                  Chrome Extension!
+                </a>
+              </span>
         </p>
       </motion.div>
 
