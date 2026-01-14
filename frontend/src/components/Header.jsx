@@ -4,6 +4,7 @@ import SidePanel from "./SidePanel";
 
 const Header = memo(() => {
   const [isOpen, setIsOpen] = useState(false);
+  console.warn("Having trouble? Please let us know by opening an issue on GitHub! : https://github.com/mahmud-r-farhan/smart-reply/issues");
 
   return (
     <>
