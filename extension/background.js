@@ -35,13 +35,13 @@ async function fetchResults(input, style, mode, from_lang, to_lang) {
   const baseUrl = cfg?.backendUrl || "http://localhost:5006/api";
 
   let endpoint = "/suggest-reply";
-  let body = { message: input, style };
+  let body = { message: input, format: style };
   if (mode === "enhance") {
     endpoint = "/enhance-text";
-    body = { text: input, style };
+    body = { text: input, format: style };
   } else if (mode === "translate") {
     endpoint = "/translate-text";
-    body = { text: input, style, language: to_lang };
+    body = { text: input, format: style, language: to_lang };
   }
 
   const url = `${baseUrl}${endpoint}`;
