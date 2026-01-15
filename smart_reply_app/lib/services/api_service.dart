@@ -10,7 +10,7 @@ class ApiService {
   /// Generate smart reply suggestions based on received message
   Future<List<String>> suggestReply({
     required String message,
-    required String style,
+    required String format,
   }) async {
     try {
       final response = await _client.post(
@@ -18,7 +18,7 @@ class ApiService {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'message': message,
-          'style': style,
+          'format': format,
         }),
       ).timeout(const Duration(seconds: 30));
       
@@ -38,7 +38,7 @@ class ApiService {
   /// Enhance/improve user's own text
   Future<List<String>> enhanceText({
     required String text,
-    required String style,
+    required String format,
   }) async {
     try {
       final response = await _client.post(
@@ -46,7 +46,7 @@ class ApiService {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'text': text,
-          'style': style,
+          'format': format,
         }),
       ).timeout(const Duration(seconds: 30));
       

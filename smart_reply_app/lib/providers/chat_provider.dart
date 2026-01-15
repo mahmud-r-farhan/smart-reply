@@ -62,12 +62,12 @@ class ChatProvider extends ChangeNotifier {
       if (_mode == AppMode.reply) {
         _results = await _apiService.suggestReply(
           message: _input,
-          style: _style,
+          format: _style,
         );
       } else if (_mode == AppMode.enhance) {
         _results = await _apiService.enhanceText(
           text: _input,
-          style: _style,
+          format: _style,
         );
       }
     } catch (e) {

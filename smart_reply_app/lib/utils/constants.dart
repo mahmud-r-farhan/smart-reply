@@ -1,6 +1,6 @@
 class ApiConstants {
   // Base URL for the backend API
-  static const String baseUrl = 'http://192.168.1.X:5006/api/';
+  static const String baseUrl = 'http://192.168.1.107:5006/api/';
   // Use localhost for physical device testing:
   // static const String baseUrl = 'http://YOUR_LOCAL_IP:5006/api';
   
@@ -17,8 +17,10 @@ class AppMode {
 class ResponseStyle {
   static const String professional = 'professional';
   static const String friendly = 'friendly';
-  static const String humorous = 'humorous';
-  static const String concise = 'concise';
+  static const String casual = 'casual';
+  static const String formal = 'formal';
+  static const String flating = 'flating';
+  static const String romantic = 'romantic';
   
   static const List<StyleOption> options = [
     StyleOption(
@@ -34,16 +36,28 @@ class ResponseStyle {
       description: 'Warm and approachable style',
     ),
     StyleOption(
-      value: humorous,
-      label: 'Humorous',
-      emoji: '😄',
-      description: 'Light-hearted with witty elements',
+      value: casual,
+      label: 'Casual',
+      emoji: '👋',
+      description: 'Relaxed and conversational',
     ),
     StyleOption(
-      value: concise,
-      label: 'Concise',
-      emoji: '⚡',
-      description: 'Short and to-the-point responses',
+      value: formal,
+      label: 'Formal',
+      emoji: '🎩',
+      description: 'Respectful and official tone',
+    ),
+    StyleOption(
+      value: flating,
+      label: 'Flating',
+      emoji: '😏',
+      description: 'Flirty compliment with romantic interest',
+    ),
+    StyleOption(
+      value: romantic,
+      label: 'Romantic',
+      emoji: '💕',
+      description: 'Affectionate and emotionally warm',
     ),
   ];
 }
