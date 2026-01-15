@@ -33,6 +33,7 @@ It helps boost productivity for anyone who writes repetitive messages, needs qui
 
 - **Frontend (Extension):** Browser Manifest V3, JavaScript, HTML, CSS  
 - **Frontend (Web):** React, Zustand for state management, Framer Motion for animations, Lucide React for icons, Tailwind CSS for styling  
+- **Frontend (Mobile):** Flutter with Provider for state management, Google Fonts for typography
 - **Backend:** Node.js + Express  
 - **AI Integration:** OpenRouter API  
 
@@ -149,10 +150,28 @@ cd smart-reply
 
 ---
 
-### 5 Connect Backend
+### 5 Set Up the Flutter Mobile App
+
+1. Prerequisites:
+   - Flutter SDK installed
+   - Android Studio / Android SDK configured
+
+2. Configure API Endpoint:
+   - For Android Emulators: The app is pre-configured to use `http://10.0.2.2:5006/api`
+   - For Physical Devices: Update `baseUrl` in `lib/utils/constants.dart` to your computer's local IP (e.g., `http://192.168.1.X:5006/api`)
+
+3. Run the app:
+   ```bash
+   cd smart_reply_app
+   flutter pub get
+   flutter run
+   ```
+
+### 6 Connect Backend
 
 - **For Extension**: Click on the extension icon → **Settings**. Paste your backend base URL (e.g., `http://localhost:5006/api`). Set default source/target languages for quick translations. Save.
 - **For Web**: The `.env` handles the connection automatically.
+- **For Mobile**: Update the API endpoint in `lib/utils/constants.dart` as described in Step 5 above.
 
 > Note: The tools automatically append `/suggest-reply`, `/enhance-text`, or `/translate-text` based on the selected mode.
 
