@@ -52,7 +52,7 @@ class EmptyState extends StatelessWidget {
               const SizedBox(height: 10),
               // Description
               Text(
-                'Our AI analyzes context, tone, and intent to craft responses, enhancements, or translations that sound natural and effective.',
+                'Our AI analyzes context, tone, and intent to craft responses & enhancements, that sound natural and effective.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AppTheme.textMuted,

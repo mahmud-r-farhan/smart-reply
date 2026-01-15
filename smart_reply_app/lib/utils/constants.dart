@@ -1,6 +1,6 @@
 class ApiConstants {
   // Base URL for the backend API
-  static const String baseUrl = 'http://192.168.1.107:5006/api/';
+  static const String baseUrl = 'http://192.168.1.X:5006/api';
   // Use localhost for physical device testing:
   // static const String baseUrl = 'http://YOUR_LOCAL_IP:5006/api';
   
