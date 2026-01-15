@@ -1,8 +1,8 @@
-import { generateTranslations } from "../services/openRouterService.js";
+import { generateTranslations, FORMATS, isValidFormat } from "../services/openRouterService.js";
 
 export const translateText = async (req, res, next) => {
   try {
-    const { text, style = "professional", language = "english" } = req.body;
+    const { text, language = "english", format = FORMATS.PROFESSIONAL } = req.body;
 
     // Validation
     if (!text || text.trim().length === 0) {
@@ -11,14 +11,19 @@ export const translateText = async (req, res, next) => {
     if (text.length > 2000) {
       return res.status(400).json({ error: "Text must be under 2000 characters" });
     }
-    if (!/^[a-zA-Z\s\-]+$/.test(style)) {
-      return res.status(400).json({ error: "Invalid style" });
+    if (!language || language.trim().length === 0) {
+      return res.status(400).json({ error: "Language is required" });
     }
     if (!/^[a-zA-Z\s\-]+$/.test(language)) {
       return res.status(400).json({ error: "Invalid language" });
     }
+    if (!isValidFormat(format)) {
+      return res.status(400).json({ 
+        error: `Invalid format. Supported formats: ${Object.values(FORMATS).join(", ")}` 
+      });
+    }
 
-    const translations = await generateTranslations(text.trim(), style, language);
+    const translations = await generateTranslations(text.trim(), language, format);
     res.json({ translations });
   } catch (error) {
     next(error);

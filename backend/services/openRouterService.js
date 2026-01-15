@@ -1,34 +1,20 @@
-// Models
-const SUGGESTIONS_MODEL = "tngtech/deepseek-r1t2-chimera:free";
-const ENHANCEMENTS_MODEL = "google/gemma-3-27b-it:free";
-const TRANSLATIONS_MODEL = "meta-llama/llama-3.3-70b-instruct:free";
+import cacheManager from "../utils/cacheManager.js";
+import { 
+  getDefaultModel, 
+  getFormatInstruction,
+  isValidFormat,
+  FORMATS 
+} from "../utils/modelSelector.js";
 
-// Simple in-memory cache with TTL (5 minutes)
-const cache = new Map();
-const CACHE_TTL = 5 * 60 * 1000;
-
-const getCacheKey = (prompt, model) => `${model}:${prompt.substring(0, 50)}`;
-const setCacheEntry = (key, value) => {
-  cache.set(key, { value, expires: Date.now() + CACHE_TTL });
-};
-const getCacheEntry = (key) => {
-  const entry = cache.get(key);
-  if (entry && entry.expires > Date.now()) {
-    return entry.value;
-  }
-  if (entry) cache.delete(key);
-  return null;
-};
-
-// Reusable API caller with retry logic
-const callOpenRouter = async (prompt, model = SUGGESTIONS_MODEL, retries = 2) => {
+// Reusable API caller with retry logic and caching
+const callOpenRouter = async (prompt, model, retries = 2) => {
   if (!process.env.OPENROUTER_API_KEY) {
     throw new Error("API key not configured");
   }
 
   // Check cache first
-  const cacheKey = getCacheKey(prompt, model);
-  const cached = getCacheEntry(cacheKey);
+  const cacheKey = cacheManager.generateKey(prompt, model);
+  const cached = cacheManager.get(cacheKey);
   if (cached) {
     console.log("Cache hit for prompt");
     return cached;
@@ -111,7 +97,7 @@ const callOpenRouter = async (prompt, model = SUGGESTIONS_MODEL, retries = 2) =>
       }
 
       // Cache successful result
-      setCacheEntry(cacheKey, result);
+      cacheManager.set(cacheKey, result);
       return result;
 
     } catch (error) {
@@ -136,21 +122,35 @@ const callOpenRouter = async (prompt, model = SUGGESTIONS_MODEL, retries = 2) =>
 
 
 // Suggestions Generator
-export const generateSuggestions = async (message, style) => {
-  const prompt = `Generate exactly 4 smart reply suggestions for this message in a ${style} tone.
+export const generateSuggestions = async (message, format = FORMATS.PROFESSIONAL) => {
+  if (!isValidFormat(format)) {
+    throw new Error(`Invalid format: ${format}. Supported: ${Object.values(FORMATS).join(", ")}`);
+  }
+
+  const formatInstruction = getFormatInstruction(format);
+  const model = getDefaultModel("SUGGESTIONS");
+  
+  const prompt = `Generate exactly 4 smart reply suggestions for this message ${formatInstruction}.
 Return ONLY a JSON array of strings.
 
 Message: "${message}"
 
 Format: ["reply1", "reply2", "reply3", "reply4"]`;
 
-  return callOpenRouter(prompt, SUGGESTIONS_MODEL);
+  return callOpenRouter(prompt, model);
 };
 
 
 // Enhancements Generator
-export const generateEnhancements = async (text, style) => {
-  const prompt = `Rewrite the following text in a ${style} tone.
+export const generateEnhancements = async (text, format = FORMATS.PROFESSIONAL) => {
+  if (!isValidFormat(format)) {
+    throw new Error(`Invalid format: ${format}. Supported: ${Object.values(FORMATS).join(", ")}`);
+  }
+
+  const formatInstruction = getFormatInstruction(format);
+  const model = getDefaultModel("ENHANCEMENTS");
+  
+  const prompt = `Rewrite the following text ${formatInstruction}.
 Improve clarity, grammar, structure, and conciseness.
 Return exactly 4 variations as a JSON array of strings.
 
@@ -158,13 +158,20 @@ Text: "${text}"
 
 Format: ["v1", "v2", "v3", "v4"]`;
 
-  return callOpenRouter(prompt, ENHANCEMENTS_MODEL);
+  return callOpenRouter(prompt, model);
 };
 
 
 // Translations Generator
-export const generateTranslations = async (text, style, language) => {
-  const prompt = `Translate the following text to ${language} in a ${style} tone.
+export const generateTranslations = async (text, language, format = FORMATS.PROFESSIONAL) => {
+  if (!isValidFormat(format)) {
+    throw new Error(`Invalid format: ${format}. Supported: ${Object.values(FORMATS).join(", ")}`);
+  }
+
+  const formatInstruction = getFormatInstruction(format);
+  const model = getDefaultModel("TRANSLATIONS");
+  
+  const prompt = `Translate the following text to ${language} ${formatInstruction}.
 Return exactly 4 different variations.
 Output ONLY a JSON array of strings.
 
@@ -172,5 +179,9 @@ Text: "${text}"
 
 Format: ["t1", "t2", "t3", "t4"]`;
 
-  return callOpenRouter(prompt, TRANSLATIONS_MODEL);
+  return callOpenRouter(prompt, model);
 };
+
+// Export format constants for use in controllers
+export { FORMATS } from "../utils/modelSelector.js";
+export { isValidFormat, getAvailableFormats } from "../utils/modelSelector.js";

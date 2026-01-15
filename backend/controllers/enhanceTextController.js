@@ -1,8 +1,8 @@
-import { generateEnhancements } from "../services/openRouterService.js";
+import { generateEnhancements, FORMATS, isValidFormat } from "../services/openRouterService.js";
 
 export const enhanceText = async (req, res, next) => {
   try {
-    const { text, style = "professional" } = req.body;
+    const { text, format = FORMATS.PROFESSIONAL } = req.body;
 
     // Validation
     if (!text || text.trim().length === 0) {
@@ -11,11 +11,13 @@ export const enhanceText = async (req, res, next) => {
     if (text.length > 2000) {
       return res.status(400).json({ error: "Text must be under 2000 characters" });
     }
-    if (!/^[a-zA-Z\s\-]+$/.test(style)) {
-      return res.status(400).json({ error: "Invalid style" });
+    if (!isValidFormat(format)) {
+      return res.status(400).json({ 
+        error: `Invalid format. Supported formats: ${Object.values(FORMATS).join(", ")}` 
+      });
     }
 
-    const enhancements = await generateEnhancements(text.trim(), style);
+    const enhancements = await generateEnhancements(text.trim(), format);
     res.json({ enhancements });
   } catch (error) {
     next(error);
