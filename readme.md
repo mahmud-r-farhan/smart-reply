@@ -19,13 +19,19 @@ It helps boost productivity for anyone who writes repetitive messages, needs qui
 - 💬 **Four AI Reply Suggestions per Message** – Get up to 4 context-aware replies instantly for any message in Smart Reply mode (available in both extension and web).  
 - ✍️ **Four AI Text Enhancements** – Improve your own text with 4 variations focusing on grammar, clarity, conciseness, structure, and effectiveness in Smart Enhance mode (like Grammarly; available in both extension and web).  
 - 🌐 **Four AI Text Translations** – Translate text to multiple languages (e.g., English, Spanish, French, German, Chinese, Arabic, Bengali) with 4 variations in customizable styles in Smart Translate mode (available in both extension and web).  
-- 🎨 **Customizable Style** – Choose from Professional, Friendly, Humorous, or Concise styles with tooltips for descriptions (applies to Reply, Enhance, and Translate modes).  
+- 🎨 **Six Response Formats** – Choose from **Professional**, **Friendly**, **Casual**, **Formal**, **Flating** (flirty compliments with romantic interest), or **Romantic** (affectionate and emotionally warm) with tooltips for descriptions (applies to Reply, Enhance, and Translate modes).  
 - 🔄 **Mode Switching** – Easily toggle between Smart Reply, Smart Enhance, and Smart Translate in the extension popup or web interface.  
+- 🤖 **Multiple Free LLM Models** – Automatically selects optimized models for each operation:
+  - Suggestions: `xiaomi/mimo-v2-flash:free`, `tngtech/deepseek-r1t2-chimera:free`, `openai/gpt-oss-20b:free`
+  - Enhancements: `tngtech/deepseek-r1t2-chimera:free`, `xiaomi/mimo-v2-flash:free`, `openai/gpt-oss-20b:free`
+  - Translations: `openai/gpt-oss-20b:free`, `xiaomi/mimo-v2-flash:free`, `tngtech/deepseek-r1t2-chimera:free`
 - ⚙️ **LLM Agnostic** – Works with any OpenRouter-supported model (free or paid).  
+- 💾 **Intelligent Caching** – SHA256-based cache keys prevent duplicate responses for different requests (5-minute TTL).  
 - 🔐 **Custom API Keys** – Bring your own API key for privacy & flexibility.  
 - 🐳 **Docker Support** – Run the backend instantly using Docker.  
 - **Extension-Specific**: Insert suggestions/translations directly into text fields (e.g., emails, chats); auto-detect selected text; keyboard shortcut (Ctrl+Shift+T) and context menu for quick in-page translation using default languages; cross-browser support for Chrome and Firefox.  
-- **Web-Specific**: Auto-resizing textarea, animated UI with Framer Motion, developer info panel, keyboard shortcuts (Ctrl/Cmd + Enter), responsive design, and accessibility features.
+- **Web-Specific**: Auto-resizing textarea, animated UI with Framer Motion, developer info panel, keyboard shortcuts (Ctrl/Cmd + Enter), responsive design, and accessibility features.  
+- **Mobile-Specific** (Flutter): Native Android support, responsive UI, optimized for on-the-go usage.
 
 ---
 
@@ -39,17 +45,20 @@ It helps boost productivity for anyone who writes repetitive messages, needs qui
 
 ---
 
-## Expected Performance Improvements v0.3
+## Expected Performance Improvements v0.4
 
 | Metric | Before | After | Improvement |
 |--------|--------|-------|-------------|
 | Response Size | 100% | 30-35% | **65-70% reduction** |
 | API Cache Hits | 0% | ~60% | **Significant latency reduction** |
+| Cache Key Collision | High | 0% | **SHA256 hashing eliminates duplicates** |
 | React Re-renders | High | Low | **40-50% fewer renders** |
 | Bundle Size | 100% | 85-88% | **12-15% reduction** |
 | Request Cancellation | ❌ | ✅ | **Prevents zombie requests** |
 | Security Headers | ❌ | ✅ | **XSS/Clickjacking protection** |
 | Input Validation | Basic | Strict | **Injection attack prevention** |
+| Model Optimization | Single | Multiple | **Best model per operation** |
+| Romantic Replies | ❌ | ✅ | **New format support** |
 
 ---
 
@@ -184,7 +193,7 @@ cd smart-reply
   ```json
   {
     "message": "Can we reschedule the meeting?",
-    "style": "professional"
+    "format": "professional"
   }
   ```
 
@@ -201,12 +210,14 @@ cd smart-reply
   }
   ```
 
+  **Supported Formats:** `professional`, `friendly`, `casual`, `formal`, `flating`, `romantic`
+
 * **POST /api/enhance-text** – Generate multiple enhanced versions of text (Smart Enhance mode)
 
   ```json
   {
     "text": "We need to reschedul the meeting because of conflict.",
-    "style": "professional"
+    "format": "professional"
   }
   ```
 
@@ -223,12 +234,14 @@ cd smart-reply
   }
   ```
 
+  **Supported Formats:** `professional`, `friendly`, `casual`, `formal`, `flating`, `romantic`
+
 * **POST /api/translate-text** – Generate multiple translated versions of text (Smart Translate mode)
 
   ```json
   {
     "text": "Hello, how are you?",
-    "style": "friendly",
+    "format": "friendly",
     "language": "bengali"
   }
   ```
@@ -246,8 +259,30 @@ cd smart-reply
   }
   ```
 
+  **Supported Formats:** `professional`, `friendly`, `casual`, `formal`, `flating`, `romantic`
+
 * **GET /health** – Health check endpoint returning `{ "status": "ok" }`.
 
+---
+
+## 🔧 Caching System (v0.4)
+
+Smart Reply now uses an intelligent SHA256-based caching system:
+
+- **Cache Key:** Full prompt + model hash (prevents collisions)
+- **TTL:** 5 minutes per entry
+- **Benefits:**
+  - No more duplicate responses for different messages
+  - Faster subsequent identical requests
+  - Automatic expiration and cleanup
+  - Statistics available via cache manager
+
+Example cache behavior:
+```
+Request 1: "Hello" → Cache Miss → OpenRouter API → Cached
+Request 2: "Hi" → Cache Miss → OpenRouter API → Cached (different prompt!)
+Request 1 (repeat): "Hello" → Cache Hit → Instant Response
+```
 
 ---
 
