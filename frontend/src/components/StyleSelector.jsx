@@ -6,8 +6,10 @@ const StyleSelector = ({ style, setStyle, showStyleInfo, setShowStyleInfo }) => 
   const styles = [
     { value: "professional", label: "Professional", icon: "💼", description: "Formal and business-like tone" },
     { value: "friendly", label: "Friendly", icon: "😊", description: "Warm and approachable style" },
-    { value: "humorous", label: "Humorous", icon: "😄", description: "Light-hearted with witty elements" },
-    { value: "concise", label: "Concise", icon: "⚡", description: "Short and to-the-point responses" }
+    { value: "casual", label: "Casual", icon: "👋", description: "Relaxed and conversational" },
+    { value: "formal", label: "Formal", icon: "🎩", description: "Respectful and official tone" },
+    { value: "flating", label: "Flating", icon: "😏", description: "Flirty compliment with romantic interest" },
+    { value: "romantic", label: "Romantic", icon: "💕", description: "Affectionate and emotionally warm" }
   ];
 
   return (
@@ -23,7 +25,7 @@ const StyleSelector = ({ style, setStyle, showStyleInfo, setShowStyleInfo }) => 
           <Info className="w-4 h-4" />
         </button>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
         {styles.map((s) => (
           <motion.button
             key={s.value}

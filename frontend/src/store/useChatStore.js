@@ -40,7 +40,7 @@ export const useChatStore = create((set, get) => {
         const config = ENDPOINT_CONFIG[state.mode] || ENDPOINT_CONFIG.reply;
         const body = {
           [config.bodyKey]: state.input,
-          style: state.style,
+          format: state.style,
         };
 
         if (state.mode === "translate") {
