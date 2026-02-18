@@ -3,7 +3,6 @@
 > AI-powered assistant to generate context-aware replies, enhance your writing, and translate text — directly from your browser, web app, or mobile device.
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-smart--reply--delta.vercel.app-blue?style=flat-square)](https://smart-reply-delta.vercel.app)
-[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](#license)
 [![Stars](https://img.shields.io/github/stars/mahmud-r-farhan/smart-reply?style=flat-square)](https://github.com/mahmud-r-farhan/smart-reply/stargazers)
 
 
