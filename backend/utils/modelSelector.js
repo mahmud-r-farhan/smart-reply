@@ -75,10 +75,10 @@ export const getFormatInstruction = (format) => {
   const instructions = {
     professional: "in a professional, business-appropriate tone",
     casual: "in a casual, conversational tone",
-    friendly: "in a friendly, warm tone",
-    formal: "in a formal, respectful tone",
-    flating: "as a flirty/flating compliment that shows romantic interest while remaining respectful",
-    romantic: "as a romantic expression that conveys affection and emotional depth"
+    friendly: "in a warm, approachable, and genuinely friendly tone. Be encouraging and personable, using inclusive and positive language that makes the recipient feel valued, comfortable, and at ease.",
+    formal: "in a formal, respectful tone suitable for official correspondence",
+    flating: "as a playful, flirtatious compliment that shows romantic interest while staying tasteful and respectful — charming but never inappropriate",
+    romantic: "as a heartfelt romantic expression conveying genuine affection and emotional depth — intimate and sincere, not generic or clichéd"
   };
   
   return instructions[lowerFormat] || instructions.professional;
