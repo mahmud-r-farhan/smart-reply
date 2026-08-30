@@ -1,0 +1,35 @@
+# Smart Reply Project Documentation
+
+> Smart Reply is a system designed to generate contextual, high-accuracy automatic response suggestions for messaging and customer communication platforms using lightweight AI models.
+
+## Overview
+- Project Repository: https://github.com/mahmud-r-farhan/smart-reply
+- Target Domain: https://smart-reply-delta.vercel.app/
+- Core Stack: Python, PyTorch, Transformers, FastAPI, Docker
+
+## System Architecture & Key Components
+- Data Preprocessing Pipeline: Cleans, tokenizes, and structures dialogue pairs from chat logs.
+- Fine-Tuning Module: Scripts and configurations for training domain-adapted seq2seq and causal LLMs for fast inference.
+- Inference Engine: FastAPI-based REST service delivering real-time reply suggestions with sub-100ms latency.
+- Evaluation Metrics: BLEU, ROUGE, and latency benchmarks for quality assurance.
+
+## Getting Started
+- Installation: `pip install -r requirements.txt`
+- Local Server Launch: `uvicorn app.main:app --reload --port 8000`
+- Docker Deployment: `docker build -t smart-reply . && docker run -p 8000:8000 smart-reply`
+
+## Key API Endpoints
+- `POST /api/v1/suggest`: Accepts a conversation context payload and returns top-k smart reply strings with confidence scores.
+- `GET /health`: System operational status and model load health check.
+
+## Platform
+- Web
+- Android
+- IOS
+- Linux
+- Windows
+- Mac
+
+## Optional Link References
+- Repository: https://github.com/mahmud-r-farhan/smart-reply
+- Live Portal: https://gravatar.com/floawd
